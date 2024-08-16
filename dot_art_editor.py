@@ -1,3 +1,4 @@
+import os
 import pyxel
 from PIL import Image
 
@@ -23,11 +24,12 @@ pyxel_palette = [
 
 
 class DotArtEditor:
-    def __init__(self):
+    def __init__(self, file_name, canvas_size=8):
         pyxel.init(128, 140, title="Dot Art Editor")  # ウィンドウの高さを増やす
         pyxel.mouse(True)
-        self.canvas_size = 8
-        self.pixel_size = 16
+        self.file_name = file_name
+        self.canvas_size = canvas_size
+        self.pixel_size = 128 // self.canvas_size
         self.colors = [-1] + [i for i in range(16)]  # -1（透明）を追加
         self.grid = [[-1 for _ in range(self.canvas_size)] for _ in range(self.canvas_size)]  # -1で初期化（透明）
         self.selected_color = -1
@@ -43,12 +45,13 @@ class DotArtEditor:
                 palette_index = pyxel.mouse_x // 8
                 if 0 <= palette_index < len(self.colors):
                     self.selected_color = self.colors[palette_index]
-            else:
-                # 描画
-                x = pyxel.mouse_x // self.pixel_size
-                y = pyxel.mouse_y // self.pixel_size
-                if 0 <= x < self.canvas_size and 0 <= y < self.canvas_size:
-                    self.grid[y][x] = self.selected_color
+
+        # マウスホイールをドラッグして描画
+        if pyxel.btn(pyxel.MOUSE_BUTTON_LEFT):
+            x = pyxel.mouse_x // self.pixel_size
+            y = pyxel.mouse_y // self.pixel_size
+            if 0 <= x < self.canvas_size and 0 <= y < self.canvas_size:
+                self.grid[y][x] = self.selected_color
 
         # PNGエクスポート
         if pyxel.btnp(pyxel.KEY_E):
@@ -83,11 +86,9 @@ class DotArtEditor:
 
         # セルとセルの間にグリッド線を描画、0.5ピクセル左上にずらす
         for y in range(1, self.canvas_size):
-            pyxel.line(-0.5, y * self.pixel_size - 0.5, self.canvas_size * self.pixel_size - 0.5,
-                       y * self.pixel_size - 0.5, 1)  # 水平線
+            pyxel.line(0, y * self.pixel_size, self.canvas_size * self.pixel_size, y * self.pixel_size, 1)  # 水平線
         for x in range(1, self.canvas_size):
-            pyxel.line(x * self.pixel_size - 0.5, -0.5, x * self.pixel_size - 0.5,
-                       self.canvas_size * self.pixel_size - 0.5, 1)  # 垂直線
+            pyxel.line(x * self.pixel_size, 0, x * self.pixel_size, self.canvas_size * self.pixel_size, 1)  # 垂直線
 
         # カラーパレットの描画（最初のパレットは透明）
         for i, color in enumerate(self.colors):
@@ -105,6 +106,10 @@ class DotArtEditor:
                 pyxel.rectb(i * 8, 130, 8, 8, 7)  # 選択中の色を強調表示
 
     def export_png(self):
+        # ディレクトリが存在しない場合は作成
+        if not os.path.exists('output_image'):
+            os.makedirs('output_image')
+
         img = Image.new('RGBA', (self.canvas_size, self.canvas_size))  # RGBAで作成（透明対応）
         for y in range(self.canvas_size):
             for x in range(self.canvas_size):
@@ -114,11 +119,15 @@ class DotArtEditor:
                 else:
                     rgb = pyxel_palette[color_id]
                     img.putpixel((x, y), (rgb[0], rgb[1], rgb[2], 255))
-        img = img.resize((self.canvas_size * self.pixel_size, self.canvas_size * self.pixel_size), Image.NEAREST)
-        img.save('dot_art.png')
-        print("PNGエクスポート完了: dot_art.png")
+        img = img.resize((self.canvas_size * self.pixel_size, self.canvas_size * self.pixel_size))
+        img.save(f'output_image/{self.file_name}.png')
+        print(f"PNGエクスポート完了: {self.file_name}.png")
 
     def output_text_data(self):
+        # ディレクトリが存在しない場合は作成
+        if not os.path.exists('output_text'):
+            os.makedirs('output_text')
+
         # グリッドデータを1行のテキストに変換
         data = []
         for y in range(self.canvas_size):
@@ -126,13 +135,13 @@ class DotArtEditor:
                 data.append(str(self.grid[y][x]))
         text_data = " ".join(data)
         print(f"テキストデータ出力: {text_data}")
-        with open("dot_art_data.txt", "w") as f:
+        with open(f"output_text/{self.file_name}.txt", "w") as f:
             f.write(text_data)
-        print("テキストデータが 'dot_art_data.txt' に保存されました。")
+        print(f"テキストデータが '{self.file_name}.txt' に保存されました。")
 
     def load_text_data(self):
         try:
-            with open("dot_art_data.txt", "r") as f:
+            with open(f"output_text/{self.file_name}.txt", "r") as f:
                 text_data = f.read()
             print(f"テキストデータ読み込み: {text_data}")
             data = text_data.split()
@@ -146,4 +155,9 @@ class DotArtEditor:
             print(f"エラーが発生しました: {e}")
 
 
-DotArtEditor()
+if __name__ == "__main__":
+    # ファイル名を設定する
+    FILE_NAME = "cat_8x8"
+    CANVAS_SIZE = 8  # 4, 8, 16, 32のいずれか
+
+    DotArtEditor(FILE_NAME, canvas_size=CANVAS_SIZE)
