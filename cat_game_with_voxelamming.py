@@ -1,4 +1,5 @@
 import pyxel
+from voxelamming_local import Voxelamming
 
 WINDOW_WIDTH = 80
 WINDOW_HEIGHT = 64
@@ -6,6 +7,8 @@ WINDOW_HEIGHT = 64
 
 class Cat:
     def __init__(self):
+        self.name = 'cat_8x8'
+        self.dot_data = '-1 -1 9 -1 9 -1 -1 -1 -1 -1 9 9 9 9 -1 -1 -1 -1 9 0 9 0 9 -1 -1 -1 9 9 7 7 7 -1 -1 -1 9 9 9 -1 -1 -1 9 9 9 9 9 9 9 -1 -1 -1 9 9 7 -1 -1 -1 -1 9 9 -1 9 9 -1 -1'
         self.x = 0
         self.y = 0
         self.img = 0
@@ -38,6 +41,8 @@ class Cat:
 
 class Mouse:
     def __init__(self):
+        self.name = 'mouse_8x8'
+        self.dot_data = '-1 -1 -1 -1 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1 -1 13 13 13 -1 -1 -1 -1 -1 13 13 13 13 0 13 -1 13 13 13 13 13 13 13 0 -1 13 13 13 13 0 13 -1 -1 13 13 13 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1'
         self.x = 20
         self.y = 0
         self.img = 0
@@ -86,12 +91,28 @@ def get_sprite_position(x, y):
 
 class App:
     def __init__(self):
+        # Pyxelの初期化
+        self.sprite_base_size = 8
         self.cat = Cat()
         self.mouse = Mouse()
         self.game_started = False
         self.game_over = False
         self.score = 0  # 初期スコア
         self.last_score_update_time = 0  # スコアを更新するためのタイマー
+
+        # Voxelammingの初期化
+        self.voxelamming = Voxelamming('1000')
+        self.voxelamming.set_box_size(0.5)
+        self.voxelamming.set_sprite_base_size(self.sprite_base_size)
+        self.voxelamming.set_game_screen_size(WINDOW_WIDTH, WINDOW_HEIGHT, 80)
+        self.voxelamming.set_game_score(self.score)
+        cat_scale = self.cat.diameter / self.sprite_base_size
+        mouse_scale = self.mouse.diameter / self.sprite_base_size
+        self.voxelamming.create_sprite(self.cat.name, self.cat.dot_data, self.cat.x, self.cat.y, 90, cat_scale, True)
+        self.voxelamming.create_sprite(self.mouse.name, self.mouse.dot_data, self.mouse.x, self.mouse.y, 90,
+                                       mouse_scale, True)
+        self.voxelamming.send_data()
+        self.voxelamming.clear_data()
 
         pyxel.init(WINDOW_WIDTH, WINDOW_HEIGHT, title='Cat Game')
 
@@ -118,10 +139,32 @@ class App:
                 self.cat.diameter / 2 + self.mouse.diameter / 2) ** 2:
             self.game_over = True
 
+            # ゲームオーバーを送信
+            self.voxelamming.set_box_size(0.5)
+            self.voxelamming.set_sprite_base_size(self.sprite_base_size)
+            self.voxelamming.set_game_screen_size(WINDOW_WIDTH, WINDOW_HEIGHT, 80)
+            self.voxelamming.set_game_score(self.score)
+            self.voxelamming.set_command('gameOver')
+            self.voxelamming.send_data()
+            self.voxelamming.clear_data()
+
         # スコアを1秒ごとに加算
         if pyxel.frame_count - self.last_score_update_time >= 30:  # PyxelのデフォルトFPSは30
             self.score += 1
             self.last_score_update_time = pyxel.frame_count
+
+        # スプライトの情報を0.1秒ごとに送信
+        if pyxel.frame_count - self.last_score_update_time >= 3:  # PyxelのデフォルトFPSは30
+            self.voxelamming.set_box_size(0.5)
+            self.voxelamming.set_sprite_base_size(self.sprite_base_size)
+            self.voxelamming.set_game_screen_size(WINDOW_WIDTH, WINDOW_HEIGHT, 80)
+            self.voxelamming.set_game_score(self.score)
+            cat_scale = self.cat.diameter / self.sprite_base_size
+            mouse_scale = self.mouse.diameter / self.sprite_base_size
+            self.voxelamming.move_sprite(self.cat.name, self.cat.x, self.cat.y, 90, cat_scale, True)
+            self.voxelamming.move_sprite(self.mouse.name, self.mouse.x, self.mouse.y, 90, mouse_scale, True)
+            self.voxelamming.send_data()
+            self.voxelamming.clear_data()
 
     def draw(self):
         pyxel.cls(1)
