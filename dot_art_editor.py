@@ -157,6 +157,9 @@ class DotArtEditor:
 
 if __name__ == "__main__":
     # ファイル名を設定する
+    # FILE_NAME = "rocket_16x16"
+    # FILE_NAME = "rocket_8x8"
+    # FILE_NAME = "mouse_8x8"
     FILE_NAME = "cat_8x8"
     CANVAS_SIZE = 8  # 4, 8, 16, 32のいずれか
 
