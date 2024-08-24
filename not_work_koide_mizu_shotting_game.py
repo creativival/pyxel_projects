@@ -26,7 +26,7 @@ class APP:
 
         pyxel.init(WINDOW_W, WINDOW_H, title="Hello Pyxel")
         # ドット絵を読み込む
-        pyxel.load("pyxel_examples/assets/sample.pyxres")
+        pyxel.load("assets/sample03.pyxres")
 
         pyxel.mouse(False)
 
