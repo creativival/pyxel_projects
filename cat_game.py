@@ -3,19 +3,29 @@ import pyxel
 WINDOW_WIDTH = 80
 WINDOW_HEIGHT = 64
 
+
 class Cat:
     def __init__(self):
         self.x = 0
         self.y = 0
+        self.img = 0
+        self.u = 0
+        self.v = 0
+        self.w = 8
+        self.h = 8
         self.speed = 0.1  # 猫の移動速度
-        self.size = 2     # 初期の猫のサイズ（円の半径）
+        self.size = 0  # 初期の猫のサイズ（円の半径）
 
     def chase(self, mouse):
         # 猫がマウスを追いかける
         if self.x < mouse.x:
             self.x += self.speed
+            self.w = 8
+            self.h = 8
         elif self.x > mouse.x:
             self.x -= self.speed
+            self.w = -8
+            self.h = 8
 
         if self.y < mouse.y:
             self.y += self.speed
@@ -25,30 +35,54 @@ class Cat:
         # 猫のサイズを徐々に大きくする
         self.size += 0.01
 
+
 class Mouse:
     def __init__(self):
         self.x = 20
         self.y = 0
+        self.img = 0
+        self.u = 0
+        self.v = 8
+        self.w = 8
+        self.h = 8
         self.speed = 0.5  # マウスの移動速度
-        self.size = 4     # マウスのサイズ（円の半径）
+        self.size = 4  # マウスのサイズ（円の半径）
 
     def move(self):
         # 矢印キーでマウスを動かす
         if pyxel.btn(pyxel.KEY_LEFT):
             self.x -= self.speed
+            self.u = 0
+            self.v = 8
+            self.w = -8
+            self.h = 8
         if pyxel.btn(pyxel.KEY_RIGHT):
             self.x += self.speed
+            self.u = 0
+            self.v = 8
+            self.w = 8
+            self.h = 8
         if pyxel.btn(pyxel.KEY_UP):
-            self.y -= self.speed
-        if pyxel.btn(pyxel.KEY_DOWN):
             self.y += self.speed
+            self.u = 8
+            self.v = 8
+            self.w = 8
+            self.h = 8
+        if pyxel.btn(pyxel.KEY_DOWN):
+            self.y -= self.speed
+            self.u = 8
+            self.v = 8
+            self.w = 8
+            self.h = -8
 
         # 画面内に動きを制限する
         self.x = max(-WINDOW_WIDTH // 2, min(WINDOW_WIDTH // 2, self.x))
         self.y = max(-WINDOW_HEIGHT // 2, min(WINDOW_HEIGHT // 2, self.y))
 
+
 def get_sprite_position(x, y):
     return WINDOW_WIDTH // 2 + x - 4, WINDOW_HEIGHT // 2 - y - 4
+
 
 class App:
     def __init__(self):
@@ -80,7 +114,8 @@ class App:
         self.cat.chase(self.mouse)  # 猫がマウスを追いかける
 
         # 衝突判定: 猫の円がマウスに触れるとゲームオーバー
-        if ((self.cat.x - self.mouse.x) ** 2 + (self.cat.y - self.mouse.y) ** 2) < (self.cat.size + self.mouse.size) ** 2:
+        if ((self.cat.x - self.mouse.x) ** 2 + (self.cat.y - self.mouse.y) ** 2) < (
+                self.cat.size + self.mouse.size) ** 2:
             self.game_over = True
 
         # スコアを1秒ごとに加算
@@ -110,11 +145,11 @@ class App:
         pyxel.circ(cat_x + 4, cat_y + 4, self.cat.size, pyxel.COLOR_RED)
 
         # 猫のスプライトを描画する
-        pyxel.blt(cat_x, cat_y, 0, 0, 0, 8, 8, 1)
+        pyxel.blt(cat_x, cat_y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1)
 
         # マウスのスプライトを描画する
         mouse_x, mouse_y = get_sprite_position(self.mouse.x, self.mouse.y)
-        pyxel.blt(mouse_x, mouse_y, 0, 0, 8, 8, 8, 1)
+        pyxel.blt(mouse_x, mouse_y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
 
     def reset_game(self):
         self.score = 0  # スコアをリセット
