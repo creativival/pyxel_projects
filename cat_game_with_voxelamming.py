@@ -1,5 +1,6 @@
 import pyxel
-from voxelamming_local import Voxelamming
+from voxelamming import Voxelamming
+# from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
 
 WINDOW_WIDTH = 80
 WINDOW_HEIGHT = 64
@@ -8,7 +9,13 @@ WINDOW_HEIGHT = 64
 class Cat:
     def __init__(self):
         self.name = 'cat_8x8'
-        self.dot_data = '-1 -1 9 -1 9 -1 -1 -1 -1 -1 9 9 9 9 -1 -1 -1 -1 9 0 9 0 9 -1 -1 -1 9 9 7 7 7 -1 -1 -1 9 9 9 -1 -1 -1 9 9 9 9 9 9 9 -1 -1 -1 9 9 7 -1 -1 -1 -1 9 9 -1 9 9 -1 -1'
+        self.dot_data = (
+            '-1 -1 9 -1 9 -1 -1 -1 -1 -1 9 9 9 9 -1 -1 '
+            '-1 -1 9 0 9 0 9 -1 -1 -1 9 9 7 7 7 -1 -1 -1 '
+            '9 9 9 -1 -1 -1 9 9 9 9 9 9 9 -1 -1 -1 9 9 7 '
+            '-1 -1 -1 -1 9 9 -1 9 9 -1 -1'
+        )
+        self.direction = 90
         self.x = 0
         self.y = 0
         self.img = 0
@@ -25,10 +32,12 @@ class Cat:
             self.x += self.speed
             self.w = 8
             self.h = 8
+            self.direction = 90
         elif self.x > mouse.x:
             self.x -= self.speed
             self.w = -8
             self.h = 8
+            self.direction = -90
 
         if self.y < mouse.y:
             self.y += self.speed
@@ -42,7 +51,13 @@ class Cat:
 class Mouse:
     def __init__(self):
         self.name = 'mouse_8x8'
-        self.dot_data = '-1 -1 -1 -1 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1 -1 13 13 13 -1 -1 -1 -1 -1 13 13 13 13 0 13 -1 13 13 13 13 13 13 13 0 -1 13 13 13 13 0 13 -1 -1 13 13 13 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1'
+        self.dot_data = (
+            '-1 -1 -1 -1 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1 '
+            '-1 13 13 13 -1 -1 -1 -1 -1 13 13 13 13 0 13 -1 '
+            '13 13 13 13 13 13 13 0 -1 13 13 13 13 0 13 -1 '
+            '-1 13 13 13 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1'
+        )
+        self.direction = 90
         self.x = 20
         self.y = 0
         self.img = 0
@@ -61,24 +76,28 @@ class Mouse:
             self.v = 8
             self.w = -8
             self.h = 8
+            self.direction = -90
         if pyxel.btn(pyxel.KEY_RIGHT):
             self.x += self.speed
             self.u = 0
             self.v = 8
             self.w = 8
             self.h = 8
+            self.direction = 90
         if pyxel.btn(pyxel.KEY_UP):
             self.y += self.speed
             self.u = 8
             self.v = 8
             self.w = 8
             self.h = 8
+            self.direction = 0
         if pyxel.btn(pyxel.KEY_DOWN):
             self.y -= self.speed
             self.u = 8
             self.v = 8
             self.w = 8
             self.h = -8
+            self.direction = 180
 
         # 画面内に動きを制限する
         self.x = max(-WINDOW_WIDTH // 2, min(WINDOW_WIDTH // 2, self.x))
@@ -108,8 +127,10 @@ class App:
         self.voxelamming.set_game_score(self.score)
         cat_scale = self.cat.diameter / self.sprite_base_size
         mouse_scale = self.mouse.diameter / self.sprite_base_size
-        self.voxelamming.create_sprite(self.cat.name, self.cat.dot_data, self.cat.x, self.cat.y, 90, cat_scale, True)
-        self.voxelamming.create_sprite(self.mouse.name, self.mouse.dot_data, self.mouse.x, self.mouse.y, 90,
+        self.voxelamming.create_sprite(self.cat.name, self.cat.dot_data, self.cat.x, self.cat.y, self.cat.direction,
+                                       cat_scale, True)
+        self.voxelamming.create_sprite(self.mouse.name, self.mouse.dot_data, self.mouse.x, self.mouse.y,
+                                       self.mouse.direction,
                                        mouse_scale, True)
         self.voxelamming.send_data()
         self.voxelamming.clear_data()
@@ -161,8 +182,9 @@ class App:
             self.voxelamming.set_game_score(self.score)
             cat_scale = self.cat.diameter / self.sprite_base_size
             mouse_scale = self.mouse.diameter / self.sprite_base_size
-            self.voxelamming.move_sprite(self.cat.name, self.cat.x, self.cat.y, 90, cat_scale, True)
-            self.voxelamming.move_sprite(self.mouse.name, self.mouse.x, self.mouse.y, 90, mouse_scale, True)
+            self.voxelamming.move_sprite(self.cat.name, self.cat.x, self.cat.y, self.cat.direction, cat_scale, True)
+            self.voxelamming.move_sprite(self.mouse.name, self.mouse.x, self.mouse.y, self.mouse.direction, mouse_scale,
+                                         True)
             self.voxelamming.send_data()
             self.voxelamming.clear_data()
 

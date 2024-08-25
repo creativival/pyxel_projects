@@ -1,6 +1,5 @@
-import time
+# 開発用のモジュール
 import datetime
-import re
 from math import floor
 import websocket
 
@@ -393,7 +392,7 @@ class Voxelamming:
         if self.is_allowed_float:
             return self.round_two_decimals(num_list)
         else:
-            return map(floor, [round(val, 1) for val in num_list])
+            return list(map(floor, [round(val, 1) for val in num_list]))  # 修正
 
     def round_two_decimals(self, num_list):
          return [round(val, 2) for val in num_list]

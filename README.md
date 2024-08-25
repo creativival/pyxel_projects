@@ -62,6 +62,38 @@ $ pyxel play 30SecondsOfDaylight.pyxapp
 - [x] [Pixel Breakout]()
 - [x] [Pixel Pong]()
 
+## Voxelammingとの連携
+
+VoxelammingのゲームモードのホストとしてPixelを使用します。
+
+### インストール
+
+```bash
+$ pip install voxelamming
+```
+
+#### メソッドの説明
+
+| メソッド名 | 説明 | 引数 |
+|---|---|---|
+| `set_game_screen_size(x, y, angle=90)` | ゲーム画面を設定します。 | `x`, `y`: 位置 (float), `angle`: 角度 (float) |
+| `set_sprite_base_size(base_size)` | スプライトのベースサイズを設定します。 | `base_size`: スプライトのボクセルサイズ (float) |
+| `set_game_score(score)` | ゲームスコアを設定します。 | `score`: ゲームのスコア(int) |
+| `send_game_over()` | ゲームオーバーを設定します。 |  |
+| `set_rotation_style(sprite_name, rotation_style='all around')` | スプライトの回転スタイルを設定します（Scratch用） | `sprite_name`: スプライトの名前 (string), `rotation_style`: 回転スタイル (left-right, dont't rotate, all round) |
+| `create_sprite(sprite_name, color_list, x, y, direction=90, scale=1, visible=True)` | スプライトを作成します。 | `sprite_name`: スプライトの名前 (string), `color_list`: ドットの色データ (string), `x`, `y`: 位置 (float), `direction`: 角度 (float), `sclae`: スケール (float), `visiable`: 表示 (boolean) |
+| `move_sprite` | スプライトを移動します。 | `sprite_name`: スプライトの名前 (string), `x`, `y`: 位置 (float), `direction`: 角度 (float), `sclae`: スケール (float), `visiable`: 表示 (boolean) |
+
+### サンプル
+
+cat_game_with_pixel.pyを参照してください。
+
+### 実行
+
+```bash
+$ python cat_game_with_pixel.py
+```
+
 
 ## ライセンス
 
