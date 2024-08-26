@@ -3,13 +3,13 @@ import datetime
 from math import floor
 import websocket
 
-from matrix_util import *
+from .matrix_util import *
 
 
 class Voxelamming:
     texture_names = ["grass", "stone", "dirt", "planks", "bricks"]
     model_names = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "Sun",
-    "Moon", "ToyBiplane", "ToyCar", "Drummer", "Robot", "ToyRocket", "RocketToy1", "RocketToy2", "Skull"]
+                   "Moon", "ToyBiplane", "ToyCar", "Drummer", "Robot", "ToyRocket", "RocketToy1", "RocketToy2", "Skull"]
 
     def __init__(self, room_name):
         self.room_name = room_name
@@ -30,6 +30,7 @@ class Voxelamming:
         self.sprites = []
         self.sprite_moves = []
         self.game_score = -1
+        self.game_screen = []  # width, height, angle=90, red=1, green=0, blue=1, alpha=0.3
         self.size = 1
         self.shape = 'box'
         self.is_metallic = 0
@@ -60,6 +61,7 @@ class Voxelamming:
         self.sprites = []
         self.sprite_moves = []
         self.game_score = -1
+        self.game_screen = []
         self.size = 1
         self.shape = 'box'
         self.is_metallic = 0
@@ -289,8 +291,8 @@ class Voxelamming:
 
     # Game API
 
-    def set_game_screen_size(self, x, y, angle=90):
-        self.commands.append(f"gameScreenSize {x} {y} {angle}")
+    def set_game_screen(self, width, height, angle=90, red=1, green=0, blue=1, alpha=0.3):
+        self.game_screen = [width, height, angle, red, green, blue, alpha]
 
     def set_sprite_base_size(self, base_size):
         self.sprite_base_size = float(base_size)
@@ -358,6 +360,7 @@ class Voxelamming:
         "sprites": {self.sprites},
         "spriteMoves": {self.sprite_moves},
         "gameScore": {self.game_score},
+        "gameScreen": {self.game_screen},
         "size": {self.size},
         "shape": "{self.shape}",
         "interval": {self.build_interval},
@@ -394,5 +397,6 @@ class Voxelamming:
         else:
             return list(map(floor, [round(val, 1) for val in num_list]))  # 修正
 
-    def round_two_decimals(self, num_list):
-         return [round(val, 2) for val in num_list]
+    @staticmethod
+    def round_two_decimals(num_list):
+        return [round(val, 2) for val in num_list]
