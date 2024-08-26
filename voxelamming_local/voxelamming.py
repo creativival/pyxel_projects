@@ -40,7 +40,6 @@ class Voxelamming:
         self.is_framing = False
         self.frame_id = 0
         self.rotation_styles = {}  # 回転の制御（送信しない）
-        self.sprite_base_size = 50  # ベースサイズを保存（送信しない）
         self.websocket = None
 
     def clear_data(self):
@@ -71,7 +70,6 @@ class Voxelamming:
         self.is_framing = False
         self.frame_id = 0
         self.rotation_styles = {}  # 回転の制御（送信しない）
-        self.sprite_base_size = 50  # ベースサイズを保存（送信しない）
 
     def set_frame_fps(self, fps=2):
         self.commands.append(f'fps {fps}')
@@ -293,9 +291,6 @@ class Voxelamming:
 
     def set_game_screen(self, width, height, angle=90, red=1, green=0, blue=1, alpha=0.3):
         self.game_screen = [width, height, angle, red, green, blue, alpha]
-
-    def set_sprite_base_size(self, base_size):
-        self.sprite_base_size = float(base_size)
 
     def set_game_score(self, score):
         self.game_score = float(score)
