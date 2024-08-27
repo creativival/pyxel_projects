@@ -289,7 +289,7 @@ class Voxelamming:
 
     # Game API
 
-    def set_game_screen(self, width, height, angle=90, red=1, green=0, blue=1, alpha=0.3):
+    def set_game_screen(self, width, height, angle=90, red=1, green=1, blue=0, alpha=0.5):
         self.game_screen = [width, height, angle, red, green, blue, alpha]
 
     def set_game_score(self, score):

@@ -107,7 +107,7 @@ class App:
     def __init__(self):
         # Pyxelの初期化
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
-        self.window_width = 80  # ARウインドウの横幅はself.dot_sizeを掛けた値になる（センチメートル）
+        self.window_width = 64 * 4 / 3  # ARウインドウの横幅はself.dot_sizeを掛けた値になる（センチメートル）
         self.window_height = 64  # ARウインドウの縦幅はself.dot_sizeを掛けた値になる（センチメートル）
         self.window_angle = 80  # ARウインドウの傾き（度）
         self.sprite_base_diameter = 8  # スプライトの基本直径（スプライトの送信スケールの基準値）
@@ -121,7 +121,7 @@ class App:
         # Voxelammingの初期化
         self.vox = Voxelamming('1000')
         self.vox.set_box_size(self.dot_size)
-        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=1, alpha=0.3)
+        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.8)
         self.vox.set_game_score(self.score)
         cat_scale = self.cat.diameter / self.sprite_base_diameter
         mouse_scale = self.mouse.diameter / self.sprite_base_diameter
@@ -159,7 +159,7 @@ class App:
 
             # ゲームオーバーを送信（ウインドウを赤に変更）
             self.vox.set_box_size(self.dot_size)
-            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0, alpha=0.3)
+            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0, alpha=0.8)
             self.vox.set_game_score(self.score)
             self.vox.set_command('gameOver')
             self.vox.send_data()
@@ -174,7 +174,7 @@ class App:
         if pyxel.frame_count - self.last_score_update_time >= 3:  # PyxelのデフォルトFPSは30
             if not self.game_over:  # ゲームオーバー直後に送信しないようにする
                 self.vox.set_box_size(self.dot_size)
-                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=1, alpha=0.3)
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.5)
                 self.vox.set_game_score(self.score)
                 cat_scale = self.cat.diameter / self.sprite_base_diameter
                 mouse_scale = self.mouse.diameter / self.sprite_base_diameter
