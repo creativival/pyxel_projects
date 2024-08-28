@@ -1,6 +1,6 @@
 import pyxel
-# from voxelamming import Voxelamming
-from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
+from voxelamming import Voxelamming
+# from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
 
 
 class Cat:
@@ -107,7 +107,7 @@ class App:
     def __init__(self):
         # Pyxelの初期化
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
-        self.window_width = 64 * 4 / 3  # ARウインドウの横幅はself.dot_sizeを掛けた値になる（センチメートル）
+        self.window_width = int(64 * 4 / 3)  # ARウインドウの横幅はself.dot_sizeを掛けた値になる（センチメートル）
         self.window_height = 64  # ARウインドウの縦幅はself.dot_sizeを掛けた値になる（センチメートル）
         self.window_angle = 80  # ARウインドウの傾き（度）
         self.sprite_base_diameter = 8  # スプライトの基本直径（スプライトの送信スケールの基準値）
