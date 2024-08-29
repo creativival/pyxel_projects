@@ -105,20 +105,22 @@ class Mouse:
 
 class App:
     def __init__(self):
-        # Pyxelの初期化
-        self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
+        # Pyxelの設定
         self.window_width = int(64 * 4 / 3)  # ARウインドウの横幅はself.dot_sizeを掛けた値になる（センチメートル）
         self.window_height = 64  # ARウインドウの縦幅はself.dot_sizeを掛けた値になる（センチメートル）
-        self.window_angle = 80  # ARウインドウの傾き（度）
-        self.sprite_base_diameter = 8  # スプライトの基本直径（スプライトの送信スケールの基準値）
-        self.cat = Cat(self)
-        self.mouse = Mouse(self)
-        self.game_started = False
-        self.game_over = False
         self.score = 0  # 初期スコア
         self.last_score_update_time = 0  # スコアを更新するためのタイマー
+        self.game_started = False
+        self.game_over = False
+        self.cat = Cat(self)
+        self.mouse = Mouse(self)
 
-        # Voxelammingの初期化
+        # ボクセラミングの設定
+        self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
+        self.window_angle = 80  # ARウインドウの傾き（度）
+        self.sprite_base_diameter = 8  # スプライトの基本直径（スプライトの送信スケールの基準値）
+
+        # ボクセラミングの初期化
         self.vox = Voxelamming('1000')
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.8)
@@ -132,10 +134,9 @@ class App:
         self.vox.send_data()
         self.vox.clear_data()
 
+        # Pyxelの初期化
         pyxel.init(self.window_width, self.window_height, title='Cat Game')
-
         pyxel.load('my_resource.pyxres')
-
         pyxel.run(self.update, self.draw)
 
     def update(self):

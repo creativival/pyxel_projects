@@ -160,7 +160,9 @@ if __name__ == "__main__":
     # FILE_NAME = "rocket_16x16"
     # FILE_NAME = "rocket_8x8"
     # FILE_NAME = "mouse_8x8"
-    FILE_NAME = "cat_8x8"
+    # FILE_NAME = "cat_8x8"
+    FILE_NAME = "starship_8x8"
+    # FILE_NAME = "enemy_8x8"
     CANVAS_SIZE = 8  # 4, 8, 16, 32のいずれか
 
     DotArtEditor(FILE_NAME, canvas_size=CANVAS_SIZE)

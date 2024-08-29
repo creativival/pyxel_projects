@@ -1,9 +1,17 @@
 import pyxel
 import random
+# from voxelamming import Voxelamming
+from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
 
 
 class Player:
     def __init__(self, x, y, speed):
+        self.name = 'spaceship_8x8'
+        self.dot_data = (
+            '-1 -1 -1 8 8 -1 -1 -1 -1 -1 3 7 7 3 -1 -1 -1 -1 -1 7 7 -1 -1 -1 -1 -1 7 7 7 7 -1 -1 -1 7 7 7 7 7 7 -1 3 7'
+            ' 7 7 7 7 7 3 -1 8 8 7 7 8 8 -1 -1 -1 -1 8 8 -1 -1 -1'
+        )
+        self.direction = 0
         self.x = x
         self.y = y
         self.img = 0
@@ -22,6 +30,12 @@ class Player:
 
 class Enemy:
     def __init__(self, x, y):
+        self.name = 'enemy_8x8'
+        self.dot_data = (
+            '-1 -1 3 -1 -1 3 -1 -1 -1 3 -1 3 3 -1 3 -1 3 -1 3 3 3 3 -1 3 3 3 3 3 3 3 3 3 3 3 -1 3 3 -1 3 3 3 3 3 3 3 3'
+            ' 3 3 -1 3 3 -1 -1 3 3 -1 3 -1 -1 -1 -1 -1 -1 3'
+        )
+        self.direction = 0
         self.x = x
         self.y = y
         self.img = 0
@@ -69,6 +83,24 @@ class App:
                 enemy = Enemy(enemy_x, enemy_y)
                 self.enemies.append(enemy)
 
+        # ボクセラミングの設定
+        self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
+        self.window_angle = 80  # ARウインドウの傾き（度）
+
+        # ボクセラミングの初期化
+        self.vox = Voxelamming('1000')
+        self.vox.set_box_size(self.dot_size)
+        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.8)
+        self.vox.set_game_score(self.score)
+        vox_x, vox_y = self.translate_voxelamming_coordinate(self.player.x, self.player.y)
+        self.vox.create_sprite(self.player.name, self.player.dot_data, vox_x, vox_y,
+                               self.player.direction, 1, True)
+        # self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, self.mouse.x, self.mouse.y, self.mouse.direction,
+        #                        mouse_scale, True)
+        self.vox.send_data()
+        self.vox.clear_data()
+
+        # Pyxelの初期化
         pyxel.init(self.window_width, self.window_height, title="Pyxel Invader Game", fps=30)
         pyxel.load("invader_game.pyxres")
         pyxel.run(self.update, self.draw)
@@ -171,6 +203,8 @@ class App:
             for missile in self.enemy_missiles:
                 pyxel.rect(missile.x, missile.y, missile.size, missile.size, missile.color_id)
 
+    def translate_voxelamming_coordinate(self, x, y):
+        return x - self.window_width // 2, self.window_height // 2 - y
 
 if __name__ == "__main__":
     App()
