@@ -97,9 +97,12 @@ class App:
         move_down = False
         for enemy in self.enemies:
             enemy.x += self.enemy_speed * self.enemy_direction
-            if enemy.x > pyxel.width - 16 or enemy.x < 0:
+
+        for enemy in self.enemies:
+            if enemy.x > pyxel.width - 8 or enemy.x < 0:
                 self.enemy_direction *= -1
                 move_down = True
+                break  # 端に到達したらすぐに方向を変える
 
         if move_down:
             for enemy in self.enemies:

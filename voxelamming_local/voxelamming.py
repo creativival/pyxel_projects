@@ -29,6 +29,8 @@ class Voxelamming:
         self.model_moves = []
         self.sprites = []
         self.sprite_moves = []
+        self.sprite_groups = []
+        self.sprite_group_moves = []
         self.game_score = -1
         self.game_screen = []  # width, height, angle=90, red=1, green=0, blue=1, alpha=0.3
         self.size = 1
@@ -59,6 +61,8 @@ class Voxelamming:
         self.model_moves = []
         self.sprites = []
         self.sprite_moves = []
+        self.sprite_groups = []
+        self.sprite_group_moves = []
         self.game_score = -1
         self.game_screen = []
         self.size = 1
@@ -336,6 +340,50 @@ class Voxelamming:
         # 新しいスプライトデータを配列に追加
         self.sprite_moves.append([sprite_name, x, y, direction, scale, '1' if visible else '0'])
 
+    def create_sprite_group(self, sprite_name, color_list):
+        # 新しいスプライトデータを配列に追加
+        self.sprite_groups.append([sprite_name, color_list])
+
+    def move_sprite_group(self, sprite_name, x, y, direction=90, scale=1):
+        # x, y, directionを丸める
+        x, y, direction = self.round_numbers([x, y, direction])
+        x, y, direction, scale = map(str, [x, y, direction, scale])
+
+        # rotation_styleを取得
+        if sprite_name in self.rotation_styles:
+            rotation_style = self.rotation_styles[sprite_name]
+
+            # rotation_styleが変更された場合、新しいスプライトデータを配列に追加
+            if rotation_style == 'left-right':
+                if direction < 0:
+                    direction = "270"  # -90から90を270にすることで、左右反転を表現
+                else:
+                    direction = "90"
+            elif rotation_style == "don't rotate":
+                direction = "90"
+            else:
+                direction = str(direction)
+        else:
+            # rotation_styleが設定されていない場合、そのままの値を使う
+            direction = str(direction)
+
+        # sprite_group_moves 配列から指定されたスプライト名の情報を検索
+        matching_sprites = [(index, info) for (index, info) in enumerate(self.sprite_group_moves) if
+                            info[0] == sprite_name]
+
+        # スプライトグループの移動データを保存または更新
+        if len(matching_sprites) == 0:
+            # 新しいスプライトデータをリストに追加
+            self.sprite_group_moves.append([sprite_name, x, y, direction, scale])
+        else:
+            # 既存のスプライトデータを更新
+            index, sprite_data = matching_sprites[0]
+            self.sprite_group_moves[index] += [x, y, direction, scale]
+
+    def move_bullet(self, x, y, direction=90, color_id=10, width=1, height=1):
+        sprite_name = f'bullet_{color_id}_{width}_{height}'
+        self.move_sprite_group(sprite_name, x, y, direction, 1)
+
     def send_data(self, name=''):
         print('Sending data...')
         now = datetime.datetime.now()
@@ -354,6 +402,8 @@ class Voxelamming:
         "modelMoves": {self.model_moves},
         "sprites": {self.sprites},
         "spriteMoves": {self.sprite_moves},
+        "spriteGroups": {self.sprite_groups},
+        "spriteGroupMoves": {self.sprite_group_moves},
         "gameScore": {self.game_score},
         "gameScreen": {self.game_screen},
         "size": {self.size},

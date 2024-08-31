@@ -1,5 +1,7 @@
 import pyxel
 from voxelamming import Voxelamming
+
+
 # from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
 
 
@@ -123,7 +125,8 @@ class App:
         # ボクセラミングの初期化
         self.vox = Voxelamming('1000')
         self.vox.set_box_size(self.dot_size)
-        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.8)
+        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
+                                 alpha=0.8)
         self.vox.set_game_score(self.score)
         cat_scale = self.cat.diameter / self.sprite_base_diameter
         mouse_scale = self.mouse.diameter / self.sprite_base_diameter
@@ -160,7 +163,8 @@ class App:
 
             # ゲームオーバーを送信（ウインドウを赤に変更）
             self.vox.set_box_size(self.dot_size)
-            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0, alpha=0.8)
+            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0,
+                                     alpha=0.8)
             self.vox.set_game_score(self.score)
             self.vox.set_command('gameOver')
             self.vox.send_data()
@@ -170,19 +174,6 @@ class App:
         if pyxel.frame_count - self.last_score_update_time >= 30:  # PyxelのデフォルトFPSは30
             self.score += 1
             self.last_score_update_time = pyxel.frame_count
-
-        # スプライトの情報を0.1秒ごとに送信
-        if pyxel.frame_count - self.last_score_update_time >= 3:  # PyxelのデフォルトFPSは30
-            if not self.game_over:  # ゲームオーバー直後に送信しないようにする
-                self.vox.set_box_size(self.dot_size)
-                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0, alpha=0.5)
-                self.vox.set_game_score(self.score)
-                cat_scale = self.cat.diameter / self.sprite_base_diameter
-                mouse_scale = self.mouse.diameter / self.sprite_base_diameter
-                self.vox.move_sprite(self.cat.name, self.cat.x, self.cat.y, self.cat.direction, cat_scale, True)
-                self.vox.move_sprite(self.mouse.name, self.mouse.x, self.mouse.y, self.mouse.direction, mouse_scale, True)
-                self.vox.send_data()
-                self.vox.clear_data()
 
     def draw(self):
         pyxel.cls(1)
