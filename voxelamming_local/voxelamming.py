@@ -29,8 +29,6 @@ class Voxelamming:
         self.model_moves = []
         self.sprites = []
         self.sprite_moves = []
-        self.sprite_groups = []
-        self.sprite_group_moves = []
         self.game_score = -1
         self.game_screen = []  # width, height, angle=90, red=1, green=0, blue=1, alpha=0.3
         self.size = 1
@@ -61,8 +59,6 @@ class Voxelamming:
         self.model_moves = []
         self.sprites = []
         self.sprite_moves = []
-        self.sprite_groups = []
-        self.sprite_group_moves = []
         self.game_score = -1
         self.game_screen = []
         self.size = 1
@@ -305,13 +301,20 @@ class Voxelamming:
     def set_rotation_style(self, sprite_name, rotation_style='all around'):
         self.rotation_styles[sprite_name] = rotation_style
 
-    def create_sprite(self, sprite_name, color_list, x, y, direction=90, scale=1, visible=True):
-        # 新しいスプライトデータを配列に追加
-        x, y, direction = self.round_numbers([x, y, direction])
-        x, y, direction, scale = map(str, [x, y, direction, scale])
-        self.sprites.append([sprite_name, color_list, x, y, direction, scale, '1' if visible else '0'])
+    # スプライトの作成と表示について、テンプレートとクローンの概念を導入する
+    # テンプレートはボクセルの集合で、標準サイズは8x8に設定する
+    # この概念により、スプライトの複数作成が可能となる（敵キャラや球など）
+    # スプライトは、ボクセラミングアプリ上で、テンプレートとして作成される（isEnable=falseにより表示されない）
+    # スプライトは、テンプレートのクローンとして画面上に表示される
+    # 送信ごとに、クローンはすべて削除されて、新しいクローンが作成される
+    # 上記の仕様により、テンプレートからスプライトを複数作成できる
 
-    def move_sprite(self, sprite_name, x, y, direction=90, scale=1, visible=True):
+    # スプライトのテンプレートを作成（スプライトは配置されない）
+    def create_sprite_template(self, sprite_name, color_list):
+        self.sprites.append([sprite_name, color_list])
+
+    # スプライトのテンプレートを使って、複数のスプライトを表示する
+    def display_sprite_template(self, sprite_name, x, y, direction=0, scale=1):
         # x, y, directionを丸める
         x, y, direction = self.round_numbers([x, y, direction])
         x, y, direction, scale = map(str, [x, y, direction, scale])
@@ -322,67 +325,54 @@ class Voxelamming:
 
             # rotation_styleが変更された場合、新しいスプライトデータを配列に追加
             if rotation_style == 'left-right':
-                if direction < 0:
-                    direction = "270"  # -90から90を270にすることで、左右反転を表現
+                direction_mod = direction % 360  # 常に0から359の範囲で処理（常に正の数になる）
+                if (direction_mod > 90 and direction_mod < 270):
+                    direction = "-180"  # -180は左右反転するようにボクセラミング側で実装されている
                 else:
-                    direction = "90"
+                    direction = "0"
             elif rotation_style == "don't rotate":
-                direction = "90"
+                direction = "0"
             else:
                 direction = str(direction)
         else:
             # rotation_styleが設定されていない場合、そのままの値を使う
             direction = str(direction)
 
-        # sprites配列から同じスプライト名の要素を削除
-        self.sprite_moves = [sprite_info for sprite_info in self.sprite_moves if sprite_info[0] != sprite_name]
-
-        # 新しいスプライトデータを配列に追加
-        self.sprite_moves.append([sprite_name, x, y, direction, scale, '1' if visible else '0'])
-
-    def create_sprite_group(self, sprite_name, color_list):
-        # 新しいスプライトデータを配列に追加
-        self.sprite_groups.append([sprite_name, color_list])
-
-    def move_sprite_group(self, sprite_name, x, y, direction=90, scale=1):
-        # x, y, directionを丸める
-        x, y, direction = self.round_numbers([x, y, direction])
-        x, y, direction, scale = map(str, [x, y, direction, scale])
-
-        # rotation_styleを取得
-        if sprite_name in self.rotation_styles:
-            rotation_style = self.rotation_styles[sprite_name]
-
-            # rotation_styleが変更された場合、新しいスプライトデータを配列に追加
-            if rotation_style == 'left-right':
-                if direction < 0:
-                    direction = "270"  # -90から90を270にすることで、左右反転を表現
-                else:
-                    direction = "90"
-            elif rotation_style == "don't rotate":
-                direction = "90"
-            else:
-                direction = str(direction)
-        else:
-            # rotation_styleが設定されていない場合、そのままの値を使う
-            direction = str(direction)
-
-        # sprite_group_moves 配列から指定されたスプライト名の情報を検索
-        matching_sprites = [(index, info) for (index, info) in enumerate(self.sprite_group_moves) if
+        # sprite_moves 配列から指定されたスプライト名の情報を検索
+        matching_sprites = [(index, info) for (index, info) in enumerate(self.sprite_moves) if
                             info[0] == sprite_name]
 
-        # スプライトグループの移動データを保存または更新
+        # スプライトの移動データを保存または更新
         if len(matching_sprites) == 0:
             # 新しいスプライトデータをリストに追加
-            self.sprite_group_moves.append([sprite_name, x, y, direction, scale])
+            self.sprite_moves.append([sprite_name, x, y, direction, scale])
         else:
-            # 既存のスプライトデータを更新
+            # 既存のスプライトデータを更新（2つ目以降のスプライトデータ）
             index, sprite_data = matching_sprites[0]
-            self.sprite_group_moves[index] += [x, y, direction, scale]
+            self.sprite_moves[index] += [x, y, direction, scale]
 
-    def move_bullet(self, x, y, direction=90, color_id=10, width=1, height=1):
-        sprite_name = f'bullet_{color_id}_{width}_{height}'
-        self.move_sprite_group(sprite_name, x, y, direction, 1)
+    # 通常のスプライトの作成
+    def create_sprite(self, sprite_name, color_list, x=0, y=0, direction=0, scale=1, visible=True):
+        # （第一処理）スプライトのテンプレートデータを配列に追加（これだけでは表示されない）
+        self.create_sprite_template(sprite_name, color_list)
+
+        # （第二処理）スプライトが表示される場合、スプライトの移動データを配列に追加（これでスプライトが表示される）
+        if visible:
+            x, y, direction = self.round_numbers([x, y, direction])
+            x, y, direction, scale = map(str, [x, y, direction, scale])
+            self.sprite_moves.append([sprite_name, x, y, direction, scale])
+
+    # 通常のスプライトの移動
+    def move_sprite(self, sprite_name, x, y, direction=0, scale=1, visible=True):
+        if visible:
+            # display_sprite_templateと同じ処理
+            self.display_sprite_template(sprite_name, x, y, direction, scale)
+
+    # ドット（弾）を表示する
+    # ドットの表示は、特別な名前（dot_色_幅_高さ）のテンプレートとして表示する
+    def display_dot(self, x, y, direction=0, color_id=10, width=1, height=1):
+        template_name = f'dot_{color_id}_{width}_{height}'
+        self.display_sprite_template(template_name, x, y, direction, 1)
 
     def send_data(self, name=''):
         print('Sending data...')
@@ -402,8 +392,6 @@ class Voxelamming:
         "modelMoves": {self.model_moves},
         "sprites": {self.sprites},
         "spriteMoves": {self.sprite_moves},
-        "spriteGroups": {self.sprite_groups},
-        "spriteGroupMoves": {self.sprite_group_moves},
         "gameScore": {self.game_score},
         "gameScreen": {self.game_screen},
         "size": {self.size},

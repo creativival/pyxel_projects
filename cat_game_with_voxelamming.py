@@ -1,23 +1,22 @@
 import pyxel
-from voxelamming import Voxelamming
-
-
-# from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
+# from voxelamming import Voxelamming
+from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
 
 
 class Cat:
+    name = 'cat_8x8'
+    dot_data = (
+        '-1 -1 9 -1 9 -1 -1 -1 -1 -1 9 9 9 9 -1 -1 '
+        '-1 -1 9 0 9 0 9 -1 -1 -1 9 9 7 7 7 -1 -1 -1 '
+        '9 9 9 -1 -1 -1 9 9 9 9 9 9 9 -1 -1 -1 9 9 7 '
+        '-1 -1 -1 -1 9 9 -1 9 9 -1 -1'
+    )
+
     def __init__(self, app):
         self.app = app
-        self.name = 'cat_8x8'
-        self.dot_data = (
-            '-1 -1 9 -1 9 -1 -1 -1 -1 -1 9 9 9 9 -1 -1 '
-            '-1 -1 9 0 9 0 9 -1 -1 -1 9 9 7 7 7 -1 -1 -1 '
-            '9 9 9 -1 -1 -1 9 9 9 9 9 9 9 -1 -1 -1 9 9 7 '
-            '-1 -1 -1 -1 9 9 -1 9 9 -1 -1'
-        )
         self.direction = 0
-        self.x = 0
-        self.y = 0
+        self.x = self.app.window_width // 2 + 4
+        self.y = self.app.window_height // 2 + 4
         self.img = 0
         self.u = 0
         self.v = 0
@@ -49,18 +48,19 @@ class Cat:
 
 
 class Mouse:
+    name = 'mouse_8x8'
+    dot_data = (
+        '-1 -1 -1 -1 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1 '
+        '-1 13 13 13 -1 -1 -1 -1 -1 13 13 13 13 0 13 -1 '
+        '13 13 13 13 13 13 13 0 -1 13 13 13 13 0 13 -1 '
+        '-1 13 13 13 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1'
+    )
+
     def __init__(self, app):
         self.app = app
-        self.name = 'mouse_8x8'
-        self.dot_data = (
-            '-1 -1 -1 -1 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1 '
-            '-1 13 13 13 -1 -1 -1 -1 -1 13 13 13 13 0 13 -1 '
-            '13 13 13 13 13 13 13 0 -1 13 13 13 13 0 13 -1 '
-            '-1 13 13 13 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1'
-        )
         self.direction = 0
-        self.x = 20
-        self.y = 0
+        self.x = (self.app.window_width // 2 + 4) + 20
+        self.y = self.app.window_height // 2 + 4
         self.img = 0
         self.u = 0
         self.v = 8
@@ -86,14 +86,14 @@ class Mouse:
             self.h = 8
             self.direction = 0
         if pyxel.btn(pyxel.KEY_UP):
-            self.y += self.speed
+            self.y -= self.speed
             self.u = 8
             self.v = 8
             self.w = 8
             self.h = 8
             self.direction = 90
         if pyxel.btn(pyxel.KEY_DOWN):
-            self.y -= self.speed
+            self.y += self.speed
             self.u = 8
             self.v = 8
             self.w = 8
@@ -101,8 +101,8 @@ class Mouse:
             self.direction = -90
 
         # 画面内に動きを制限する
-        self.x = max(-self.app.window_width // 2, min(self.app.window_width // 2, self.x))
-        self.y = max(-self.app.window_height // 2, min(self.app.window_height // 2, self.y))
+        self.x = max(-4, min(self.app.window_width - 4, self.x))
+        self.y = max(-4, min(self.app.window_height - 4, self.y))
 
 
 class App:
@@ -128,27 +128,23 @@ class App:
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
         self.vox.set_game_score(self.score)
+        cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
         cat_scale = self.cat.diameter / self.sprite_base_diameter
+        self.vox.create_sprite(self.cat.name, self.cat.dot_data, cat_x, cat_y, self.cat.direction, cat_scale)
+        mouse_x, mouse_y = self.convert_sprite_position_to_voxelamming(self.mouse.x, self.mouse.y)  # マウスの位置を変換
         mouse_scale = self.mouse.diameter / self.sprite_base_diameter
-        self.vox.create_sprite(self.cat.name, self.cat.dot_data, self.cat.x, self.cat.y, self.cat.direction, cat_scale,
-                               True)
-        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, self.mouse.x, self.mouse.y, self.mouse.direction,
-                               mouse_scale, True)
+        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, mouse_x, mouse_y, self.mouse.direction,
+                               mouse_scale)
         self.vox.send_data()
         self.vox.clear_data()
 
         # Pyxelの初期化
         pyxel.init(self.window_width, self.window_height, title='Cat Game')
-        pyxel.load('my_resource.pyxres')
+        pyxel.load('cat_game.pyxres')
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        if not self.game_started:
-            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-                self.reset_game()
-            return
-
-        if self.game_over:
+        if not self.game_started or self.game_over:
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
                 self.reset_game()
             return
@@ -171,9 +167,26 @@ class App:
             self.vox.clear_data()
 
         # スコアを1秒ごとに加算
-        if pyxel.frame_count - self.last_score_update_time >= 30:  # PyxelのデフォルトFPSは30
+        delta_time = pyxel.frame_count - self.last_score_update_time
+        if delta_time >= 30:  # PyxelのデフォルトFPSは30
             self.score += 1
             self.last_score_update_time = pyxel.frame_count
+
+        # スプライトの情報を0.1秒ごとに送信
+        if delta_time % 3 == 0:  # PyxelのデフォルトFPSは30
+            if not self.game_over:  # ゲームオーバー直後に送信しないようにする
+                self.vox.set_box_size(self.dot_size)
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
+                                         blue=0, alpha=0.5)
+                self.vox.set_game_score(self.score)
+                cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
+                cat_scale = self.cat.diameter / self.sprite_base_diameter
+                self.vox.move_sprite(self.cat.name, cat_x, cat_y, self.cat.direction, cat_scale)
+                mouse_x, mouse_y = self.convert_sprite_position_to_voxelamming(self.mouse.x, self.mouse.y)  # マウスの位置を変換
+                mouse_scale = self.mouse.diameter / self.sprite_base_diameter
+                self.vox.move_sprite(self.mouse.name, mouse_x, mouse_y, self.mouse.direction, mouse_scale)
+                self.vox.send_data()
+                self.vox.clear_data()
 
     def draw(self):
         pyxel.cls(1)
@@ -195,18 +208,16 @@ class App:
             return
 
         # 徐々に大きくなる円を描画する
-        cat_x, cat_y = self.get_sprite_position(self.cat.x, self.cat.y)
-        pyxel.circ(cat_x + 4, cat_y + 4, self.cat.diameter / 2, pyxel.COLOR_RED)
+        pyxel.circ(self.cat.x + 4, self.cat.y + 4, self.cat.diameter / 2, pyxel.COLOR_RED)
 
         # 猫のスプライトを描画する
-        pyxel.blt(cat_x, cat_y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1)
+        pyxel.blt(self.cat.x, self.cat.y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1)
 
         # マウスのスプライトを描画する
-        mouse_x, mouse_y = self.get_sprite_position(self.mouse.x, self.mouse.y)
-        pyxel.blt(mouse_x, mouse_y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
+        pyxel.blt(self.mouse.x, self.mouse.y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
 
-    def get_sprite_position(self, x, y):
-        return self.window_width // 2 + x - 4, self.window_height // 2 - y - 4
+    def convert_sprite_position_to_voxelamming(self, x, y):
+        return x - self.window_width // 2 + 4, self.window_height // 2 - y + 4
 
     def reset_game(self):
         self.score = 0  # スコアをリセット

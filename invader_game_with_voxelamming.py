@@ -5,12 +5,13 @@ from voxelamming_local import Voxelamming  # ローカルで開発している�
 
 
 class Player:
+    name = 'spaceship_8x8'
+    dot_data = (
+        '-1 -1 -1 8 8 -1 -1 -1 -1 -1 3 7 7 3 -1 -1 -1 -1 -1 7 7 -1 -1 -1 -1 -1 7 7 7 7 -1 -1 -1 7 7 7 7 7 7 -1 3 7'
+        ' 7 7 7 7 7 3 -1 8 8 7 7 8 8 -1 -1 -1 -1 8 8 -1 -1 -1'
+    )
+
     def __init__(self, x, y, speed):
-        self.name = 'spaceship_8x8'
-        self.dot_data = (
-            '-1 -1 -1 8 8 -1 -1 -1 -1 -1 3 7 7 3 -1 -1 -1 -1 -1 7 7 -1 -1 -1 -1 -1 7 7 7 7 -1 -1 -1 7 7 7 7 7 7 -1 3 7'
-            ' 7 7 7 7 7 3 -1 8 8 7 7 8 8 -1 -1 -1 -1 8 8 -1 -1 -1'
-        )
         self.direction = 0
         self.x = x
         self.y = y
@@ -29,12 +30,13 @@ class Player:
 
 
 class Enemy:
+    name = 'enemy_8x8'
+    dot_data = (
+        '-1 -1 3 -1 -1 3 -1 -1 -1 3 -1 3 3 -1 3 -1 3 -1 3 3 3 3 -1 3 3 3 3 3 3 3 3 3 3 3 -1 3 3 -1 3 3 3 3 3 3 3 3'
+        ' 3 3 -1 3 3 -1 -1 3 3 -1 3 -1 -1 -1 -1 -1 -1 3'
+    )
+
     def __init__(self, x, y):
-        self.name = 'enemy_8x8'
-        self.dot_data = (
-            '-1 -1 3 -1 -1 3 -1 -1 -1 3 -1 3 3 -1 3 -1 3 -1 3 3 3 3 -1 3 3 3 3 3 3 3 3 3 3 3 -1 3 3 -1 3 3 3 3 3 3 3 3'
-            ' 3 3 -1 3 3 -1 -1 3 3 -1 3 -1 -1 -1 -1 -1 -1 3'
-        )
         self.direction = 0
         self.x = x
         self.y = y
@@ -46,7 +48,7 @@ class Enemy:
 
 
 class Missile:
-    def __init__(self, x, y, color_id, direction = 0, width=1, height=1):
+    def __init__(self, x, y, color_id, direction=0, width=1, height=1):
         self.x = x
         self.y = y
         self.direction = direction
@@ -95,13 +97,16 @@ class App:
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
         self.vox.set_game_score(self.score)
-        vox_x, vox_y = self.sprite_translate_voxelamming_coordinate(self.player.x, self.player.y)
-        self.vox.create_sprite_group(self.player.name, self.player.dot_data)
-        self.vox.move_sprite_group(self.player.name, vox_x, vox_y, self.player.direction, 1)
-        self.vox.create_sprite_group(enemy.name, enemy.dot_data)
+
+        # プレイヤーのスプライトを表示
+        vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
+        self.vox.create_sprite(self.player.name, self.player.dot_data, vox_x, vox_y, self.player.direction, 1)
+
+        # 敵は複数のため、テンプレートを作成して、それを複数箇所に表示する
+        self.vox.create_sprite_template(Enemy.name, Enemy.dot_data)
         for enemy in self.enemies:
-            vox_x, vox_y = self.sprite_translate_voxelamming_coordinate(enemy.x, enemy.y)
-            self.vox.move_sprite_group(enemy.name, vox_x, vox_y, enemy.direction, 1)
+            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
+            self.vox.display_sprite_template(enemy.name, vox_x, vox_y, enemy.direction, 1)
         self.vox.send_data()
         self.vox.clear_data()
 
@@ -126,7 +131,8 @@ class App:
             missile_direction = 0
             missile_width = 2
             missile_height = 4
-            self.missiles.append(Missile(missile_x, missile_y, missile_clor_id, missile_direction, missile_width, missile_height))
+            self.missiles.append(
+                Missile(missile_x, missile_y, missile_clor_id, missile_direction, missile_width, missile_height))
 
         # ミサイルの移動
         for missile in self.missiles[:]:
@@ -162,7 +168,8 @@ class App:
             missile_direction = 0
             missile_width = 2
             missile_height = 4
-            self.enemy_missiles.append(Missile(missile_x, missile_y, missile_clor_id, missile_direction, missile_width, missile_height))
+            self.enemy_missiles.append(
+                Missile(missile_x, missile_y, missile_clor_id, missile_direction, missile_width, missile_height))
 
         # 敵ミサイルの移動
         for missile in self.enemy_missiles[:]:
@@ -206,15 +213,22 @@ class App:
                 self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                          blue=0, alpha=0.5)
                 self.vox.set_game_score(self.score)
-                vox_x, vox_y = self.sprite_translate_voxelamming_coordinate(self.player.x, self.player.y)
-                self.vox.move_sprite_group(self.player.name, vox_x, vox_y, self.player.direction, 1)
+
+                # スプライトの移動
+                vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
+                self.vox.move_sprite(self.player.name, vox_x, vox_y, self.player.direction, 1)
+
+                # 敵の移動はテンプレートを複数箇所に表示する
                 for enemy in self.enemies:
-                    vox_x, vox_y = self.sprite_translate_voxelamming_coordinate(enemy.x, enemy.y)
-                    self.vox.move_sprite_group(enemy.name, vox_x, vox_y, enemy.direction, 1)
+                    vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
+                    self.vox.display_sprite_template(enemy.name, vox_x, vox_y, enemy.direction, 1)
+
+                # ミサイルはdotとして表示
                 for missile in self.missiles + self.enemy_missiles:
-                    vox_x, vox_y = self.bullet_translate_voxelamming_coordinate(missile.x, missile.y, missile.height)
-                    self.vox.move_bullet(vox_x, vox_y, missile.color_id, missile.direction, missile.width,
+                    vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.height)
+                    self.vox.display_dot(vox_x, vox_y, missile.direction, missile.color_id, missile.width,
                                          missile.height)
+
                 self.vox.send_data()
                 self.vox.clear_data()
 
@@ -269,10 +283,10 @@ class App:
                 enemy = Enemy(enemy_x, enemy_y)
                 self.enemies.append(enemy)
 
-    def sprite_translate_voxelamming_coordinate(self, x, y):
+    def convert_sprite_position_to_voxelamming(self, x, y):
         return x - self.window_width // 2 + 4, self.window_height // 2 - y + 4
 
-    def bullet_translate_voxelamming_coordinate(self, x, y, height=1):
+    def convert_dot_position_to_voxelamming(self, x, y, height=1):
         return x - self.window_width // 2 + 0.5, self.window_height // 2 - y + height / 2
 
     def send_command(self, command):
