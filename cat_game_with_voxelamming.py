@@ -15,8 +15,8 @@ class Cat:
     def __init__(self, app):
         self.app = app
         self.direction = 0
-        self.x = self.app.window_width // 2 + 4
-        self.y = self.app.window_height // 2 + 4
+        self.x = self.app.window_width // 2 - 4
+        self.y = self.app.window_height // 2 - 4
         self.img = 0
         self.u = 0
         self.v = 0
@@ -59,8 +59,8 @@ class Mouse:
     def __init__(self, app):
         self.app = app
         self.direction = 0
-        self.x = (self.app.window_width // 2 + 4) + 20
-        self.y = self.app.window_height // 2 + 4
+        self.x = (self.app.window_width // 2 - 4) + 20
+        self.y = self.app.window_height // 2 - 4
         self.img = 0
         self.u = 0
         self.v = 8
@@ -108,7 +108,7 @@ class Mouse:
 class App:
     def __init__(self):
         # Pyxelの設定
-        self.window_width = int(64 * 4 / 3)  # ARウインドウの横幅はself.dot_sizeを掛けた値になる（センチメートル）
+        self.window_width = 64 * 4 // 3  # ARウインドウの横幅はself.dot_sizeを掛けた値になる（センチメートル）
         self.window_height = 64  # ARウインドウの縦幅はself.dot_sizeを掛けた値になる（センチメートル）
         self.score = 0  # 初期スコア
         self.last_score_update_time = 0  # スコアを更新するためのタイマー
@@ -127,7 +127,8 @@ class App:
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
-        self.vox.set_game_score(self.score)
+        # スコアはサイズ24x2として、中心基準で表示する位置を計算する
+        self.vox.set_game_score(self.score, -28, 29)
         cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
         cat_scale = self.cat.diameter / self.sprite_base_diameter
         self.vox.create_sprite(self.cat.name, self.cat.dot_data, cat_x, cat_y, self.cat.direction, cat_scale)
@@ -161,7 +162,7 @@ class App:
             self.vox.set_box_size(self.dot_size)
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0,
                                      alpha=0.8)
-            self.vox.set_game_score(self.score)
+            self.vox.set_game_score(self.score, -28, 29)
             self.vox.set_command('gameOver')
             self.vox.send_data()
             self.vox.clear_data()
@@ -178,7 +179,7 @@ class App:
                 self.vox.set_box_size(self.dot_size)
                 self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                          blue=0, alpha=0.5)
-                self.vox.set_game_score(self.score)
+                self.vox.set_game_score(self.score, -28, 29)
                 cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
                 cat_scale = self.cat.diameter / self.sprite_base_diameter
                 self.vox.move_sprite(self.cat.name, cat_x, cat_y, self.cat.direction, cat_scale)
@@ -217,7 +218,7 @@ class App:
         pyxel.blt(self.mouse.x, self.mouse.y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
 
     def convert_sprite_position_to_voxelamming(self, x, y):
-        return x - self.window_width // 2 + 4, self.window_height // 2 - y + 4
+        return x - self.window_width // 2 + 4, self.window_height // 2 - (y + 4)
 
     def reset_game(self):
         self.score = 0  # スコアをリセット

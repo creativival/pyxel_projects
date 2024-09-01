@@ -95,7 +95,7 @@ class App:
 
         pyxel.init(WINDOW_WIDTH, WINDOW_HEIGHT, title='Cat Game')
 
-        pyxel.load('my_resource.pyxres')
+        pyxel.load('cat_game.pyxres')
 
         pyxel.run(self.update, self.draw)
 

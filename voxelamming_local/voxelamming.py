@@ -29,7 +29,7 @@ class Voxelamming:
         self.model_moves = []
         self.sprites = []
         self.sprite_moves = []
-        self.game_score = -1
+        self.game_score = []
         self.game_screen = []  # width, height, angle=90, red=1, green=0, blue=1, alpha=0.3
         self.size = 1
         self.shape = 'box'
@@ -59,7 +59,7 @@ class Voxelamming:
         self.model_moves = []
         self.sprites = []
         self.sprite_moves = []
-        self.game_score = -1
+        self.game_score = []
         self.game_screen = []
         self.size = 1
         self.shape = 'box'
@@ -292,8 +292,9 @@ class Voxelamming:
     def set_game_screen(self, width, height, angle=90, red=1, green=1, blue=0, alpha=0.5):
         self.game_screen = [width, height, angle, red, green, blue, alpha]
 
-    def set_game_score(self, score):
-        self.game_score = float(score)
+    def set_game_score(self, score, x=0, y=0):
+        score, x, y = map(float, [score, x, y])
+        self.game_score = [score, x, y]
 
     def send_game_over(self):
         self.commands.append('gameOver')

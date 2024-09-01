@@ -212,7 +212,7 @@ class App:
                 self.vox.set_box_size(self.dot_size)
                 self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                          blue=0, alpha=0.5)
-                self.vox.set_game_score(self.score)
+                self.vox.set_game_score(self.score, -66, 57)
 
                 # スプライトの移動
                 vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
@@ -284,17 +284,19 @@ class App:
                 self.enemies.append(enemy)
 
     def convert_sprite_position_to_voxelamming(self, x, y):
-        return x - self.window_width // 2 + 4, self.window_height // 2 - y + 4
+        return x - self.window_width // 2 + 4, self.window_height // 2 - (y + 4)
 
     def convert_dot_position_to_voxelamming(self, x, y, height=1):
-        return x - self.window_width // 2 + 0.5, self.window_height // 2 - y + height / 2
+        return x - self.window_width // 2 + 0.5, self.window_height // 2 - (y + height / 2)
+
 
     def send_command(self, command):
         # ゲームオーバーを送信（ウインドウを赤に変更）
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0,
                                  alpha=0.8)
-        self.vox.set_game_score(self.score)
+        # スコアはサイズ24x2として、中心基準で表示する位置を計算する
+        self.vox.set_game_score(self.score, -66, -57)
         self.vox.set_command(command)
         self.vox.send_data()
         self.vox.clear_data()
