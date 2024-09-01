@@ -56,7 +56,7 @@ class App:
         pass
 
     def convert_dot_position_to_voxelamming(self, x, y, height=1):
-        return x - self.w // 2 + 0.5, self.w // 2 - y + height / 2
+        return x - self.w // 2 + 0.5, self.w // 2 - (y + height / 2)
 
 
 App()

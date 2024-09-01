@@ -375,6 +375,13 @@ class Voxelamming:
         template_name = f'dot_{color_id}_{width}_{height}'
         self.display_sprite_template(template_name, x, y, direction, 1)
 
+    # テキストを表示する
+    # テキストの表示は、特別な名前（template_色_幅_高さ）のテンプレートとして表示する
+    # 一度表示した後はテンプレートが自動で保存されているため、テンプレートをクローンとして表示できる
+    def display_text(self, text, x, y, direction=0, scale=1, color_id=7, is_vertical=False):
+        template_name = f'text_{text}_{color_id}_{"1" if is_vertical else "0"}'
+        self.display_sprite_template(template_name, x, y, direction, scale)
+
     def send_data(self, name=''):
         print('Sending data...')
         now = datetime.datetime.now()
