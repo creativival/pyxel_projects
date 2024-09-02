@@ -11,24 +11,21 @@ from voxelamming_local import Voxelamming  # ローカルで開発している�
 class APP:
     # アルファベットのリスト（小文字と大文字）
     # alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    alphabet = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポ：：。。・・／／　　　　　"
-
-    # ランダムなインデックスの配列を生成
-    random_indices = np.random.randint(0, len(alphabet), (20, 20))  # 20行20列のランダムなインデックスの配列
+    alphabet = ("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンガギグゲゴザジズゼゾダヂヅデド"
+                "バビブベボパピプペポ：：。。・・／／￥￥ーー　　　　　　　　　　　　　")
 
     def __init__(self):
         self.w = 196
         self.x = 0
         self.y = -self.w
-        self.pos_x = np.random.randint(0, self.w, (20, 1))
-        self.pos_y = np.random.randint(0, 40, (20, 1))
+        self.send_string_num = 8
+        self.length_string = 20
+        # ランダムなインデックスの配列を生成
+        random_indices = np.random.randint(0, len(self.alphabet), (self.send_string_num, self.length_string))
+        self.pos_x = np.random.randint(0, self.w, (self.send_string_num, 1))
+        self.pos_y = np.random.randint(0, 40, (self.send_string_num, 1))
         # インデックスをアルファベットにマッピングして文字列を生成
-        self.random_strings = [[self.alphabet[idx] for idx in row] for row in self.random_indices]
-        self.dot_size = 0.5
-        self.window_angle = 80
-        self.vox = Voxelamming('1000')
-        self.send_data_num = 8  # 送信するデータの数を少しずつ増やしていく（クラッシュ防止）
-
+        self.random_strings = [[self.alphabet[idx] for idx in row] for row in random_indices]
         # ビットマップフォントの読み込み
         self.font = pyxel.Font("assets/misaki_mincho.bdf")
         self.font_size = 8
@@ -37,7 +34,11 @@ class APP:
         # self.font = pyxel.Font("assets/umplus_j12r.bdf")
         # self.font_size = 12
 
-        # フォントを指定してテキスト表示
+        # ボクセラミングの設定
+        self.dot_size = 0.5
+        self.window_angle = 80
+        self.vox = Voxelamming('1000')
+
         pyxel.init(self.w, self.w, title="mtr", display_scale=6, fps=30)
         pyxel.mouse(False)
         pyxel.run(self.update, self.draw)
@@ -48,8 +49,8 @@ class APP:
     def draw(self):
         pyxel.cls(0)
 
-        for i in range(int(self.send_data_num)):  # 複数箇所に文字列を配置する
-            for ii in range(20):  # 縦方向に文字を繋げる
+        for i in range(int(self.send_string_num)):  # 複数箇所に文字列を配置する
+            for ii in range(self.length_string):  # 縦方向に文字を繋げる
                 c1 = randint(1, 20)
                 if c1 == 1:
                     c = 11
@@ -58,26 +59,27 @@ class APP:
 
                 x = self.x + self.pos_x[i][0]
                 y = self.y + self.pos_y[i][0] + self.font_size * ii
+                # フォントを指定してテキスト表示
                 pyxel.text(x, y, str(self.random_strings[i][ii]), c, self.font)
 
-        # # 30フレームごとに送信する
-        # if pyxel.frame_count % 30 == 0:
-        #     self.vox.set_box_size(self.dot_size)
-        #     self.vox.set_game_screen(self.w, self.w, self.window_angle, red=1, green=1,
-        #                              blue=1, alpha=0.1)
-        #
-        #     for i in range(int(self.send_data_num)):
-        #         x = self.x + self.pos_x[i][0]
-        #         y = self.y + self.pos_y[i][0]
-        #         direction = 0
-        #         scale = 3
-        #         col = 11
-        #         text = "".join(self.random_strings[i])  # 1行分の文字列を結合（20文字）
-        #         vox_x, vox_y = self.convert_text_position_to_voxelamming(x, y, text, is_vertical=True)
-        #         self.vox.display_text(text, vox_x, vox_y, direction, scale, col, is_vertical=True)
-        #
-        #     self.vox.send_data()
-        #     self.vox.clear_data()
+        # 30フレームごとに送信する
+        if pyxel.frame_count % 30 == 0:
+            self.vox.set_box_size(self.dot_size)
+            self.vox.set_game_screen(self.w, self.w, self.window_angle, red=1, green=1,
+                                     blue=1, alpha=0.1)
+
+            for i in range(int(self.send_string_num)):
+                x = self.x + self.pos_x[i][0]
+                y = self.y + self.pos_y[i][0]
+                direction = 0
+                scale = 3
+                col = 11
+                text = "".join(self.random_strings[i])  # 1行分の文字列を結合（20文字）
+                vox_x, vox_y = self.convert_text_position_to_voxelamming(x, y, text, is_vertical=True)
+                self.vox.display_text(text, vox_x, vox_y, direction, scale, col, is_vertical=True)
+
+            self.vox.send_data()
+            self.vox.clear_data()
 
         self.y += 1
         if self.y > self.w:
