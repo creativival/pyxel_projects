@@ -18,7 +18,7 @@ class APP:
         self.w = 196
         self.x = 0
         self.y = -self.w
-        self.send_string_num = 8
+        self.send_string_num = 12
         self.length_string = 20
         # ランダムなインデックスの配列を生成
         random_indices = np.random.randint(0, len(self.alphabet), (self.send_string_num, self.length_string))
@@ -62,8 +62,8 @@ class APP:
                 # フォントを指定してテキスト表示
                 pyxel.text(x, y, str(self.random_strings[i][ii]), c, self.font)
 
-        # 30フレームごとに送信する
-        if pyxel.frame_count % 30 == 0:
+        # 60フレームごとに送信する
+        if pyxel.frame_count % 60 == 0:
             self.vox.set_box_size(self.dot_size)
             self.vox.set_game_screen(self.w, self.w, self.window_angle, red=1, green=1,
                                      blue=1, alpha=0.1)

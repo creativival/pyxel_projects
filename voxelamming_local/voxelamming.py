@@ -358,7 +358,8 @@ class Voxelamming:
         self.create_sprite_template(sprite_name, color_list)
 
         # （第二処理）スプライトが表示される場合、スプライトの移動データを配列に追加（これでスプライトが表示される）
-        if visible:
+        # visibleがTrueの場合、またはx, y, direction, scaleのいずれかがデフォルト値でないの場合
+        if visible or not(x == 0 and y == 0 and direction == 0 and scale == 1):
             x, y, direction = self.round_numbers([x, y, direction])
             x, y, direction, scale = map(str, [x, y, direction, scale])
             self.sprite_moves.append([sprite_name, x, y, direction, scale])

@@ -1,4 +1,5 @@
 import pyxel
+import time
 # from voxelamming import Voxelamming
 from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
 
@@ -158,15 +159,6 @@ class App:
                 self.cat.diameter / 2 + self.mouse.diameter / 2) ** 2:
             self.game_over = True
 
-            # ゲームオーバーを送信（ウインドウを赤に変更）
-            self.vox.set_box_size(self.dot_size)
-            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0,
-                                     alpha=0.8)
-            self.vox.set_game_score(self.score, -28, 29)
-            self.vox.set_command('gameOver')
-            self.vox.send_data()
-            self.vox.clear_data()
-
         # スコアを1秒ごとに加算
         delta_time = pyxel.frame_count - self.last_score_update_time
         if delta_time >= 30:  # PyxelのデフォルトFPSは30
@@ -174,20 +166,33 @@ class App:
             self.last_score_update_time = pyxel.frame_count
 
         # スプライトの情報を0.1秒ごとに送信
-        if delta_time % 3 == 0:  # PyxelのデフォルトFPSは30
-            if not self.game_over:  # ゲームオーバー直後に送信しないようにする
-                self.vox.set_box_size(self.dot_size)
-                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
-                                         blue=0, alpha=0.5)
-                self.vox.set_game_score(self.score, -28, 29)
-                cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
-                cat_scale = self.cat.diameter / self.sprite_base_diameter
-                self.vox.move_sprite(self.cat.name, cat_x, cat_y, self.cat.direction, cat_scale)
-                mouse_x, mouse_y = self.convert_sprite_position_to_voxelamming(self.mouse.x, self.mouse.y)  # マウスの位置を変換
-                mouse_scale = self.mouse.diameter / self.sprite_base_diameter
-                self.vox.move_sprite(self.mouse.name, mouse_x, mouse_y, self.mouse.direction, mouse_scale)
+        if delta_time % 3 == 0 or self.game_over:  # PyxelのデフォルトFPSは30
+            self.vox.set_box_size(self.dot_size)
+            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
+                                     blue=0, alpha=0.5)
+            self.vox.set_game_score(self.score, -28, 29)
+            cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
+            cat_scale = self.cat.diameter / self.sprite_base_diameter
+            self.vox.move_sprite(self.cat.name, cat_x, cat_y, self.cat.direction, cat_scale)
+            mouse_x, mouse_y = self.convert_sprite_position_to_voxelamming(self.mouse.x, self.mouse.y)  # マウスの位置を変換
+            mouse_scale = self.mouse.diameter / self.sprite_base_diameter
+            self.vox.move_sprite(self.mouse.name, mouse_x, mouse_y, self.mouse.direction, mouse_scale)
+            self.vox.send_data()
+
+            # ゲームオーバーの表示と画面を赤に変更
+            if self.game_over:
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0,
+                                         blue=0, alpha=0.8)
+                self.vox.set_command('gameOver')
+
+            self.vox.send_data()
+
+            # ゲームオーバー時に1秒待ってから再度データを送信
+            if self.game_over:
+                time.sleep(1)
                 self.vox.send_data()
-                self.vox.clear_data()
+
+            self.vox.clear_data()
 
     def draw(self):
         pyxel.cls(1)

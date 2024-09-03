@@ -1,4 +1,5 @@
 import pyxel
+import time
 import random
 # from voxelamming import Voxelamming
 from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
@@ -103,10 +104,10 @@ class App:
         self.vox.create_sprite(self.player.name, self.player.dot_data, vox_x, vox_y, self.player.direction, 1)
 
         # 敵は複数のため、テンプレートを作成して、それを複数箇所に表示する
-        self.vox.create_sprite_template(Enemy.name, Enemy.dot_data)
+        self.vox.create_sprite(Enemy.name, Enemy.dot_data)
         for enemy in self.enemies:
             vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
-            self.vox.display_sprite_template(enemy.name, vox_x, vox_y, enemy.direction, 1)
+            self.vox.move_sprite(enemy.name, vox_x, vox_y, enemy.direction, 1)
         self.vox.send_data()
         self.vox.clear_data()
 
@@ -192,45 +193,59 @@ class App:
             if (self.player.x < missile.x < self.player.x + 8 and
                     self.player.y < missile.y < self.player.y + 8):
                 self.game_over = True
-                self.send_command('gameOver')
 
         # プレイヤーと敵の衝突判定
         for enemy in self.enemies:
             if (self.player.x < enemy.x < self.player.x + 8 and
                     self.player.y < enemy.y < self.player.y + 8):
                 self.game_over = True
-                self.send_command('gameOver')
 
         # ゲームクリア判定
         if not self.enemies:
             self.game_clear = True
-            self.send_command('gameClear')
 
         # スプライトの情報を0.1秒ごとに送信
-        if pyxel.frame_count % 3 == 0:  # PyxelのデフォルトFPSは30
-            if not self.game_over:  # ゲームオーバー直後に送信しないようにする
-                self.vox.set_box_size(self.dot_size)
-                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
-                                         blue=0, alpha=0.5)
-                self.vox.set_game_score(self.score, -66, 57)
+        if pyxel.frame_count % 3 == 0 or self.game_clear or self.game_over:  # PyxelのデフォルトFPSは30
+            self.vox.set_box_size(self.dot_size)
+            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
+                                     blue=0, alpha=0.5)
+            self.vox.set_game_score(self.score, -66, 57)
 
-                # スプライトの移動
-                vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
-                self.vox.move_sprite(self.player.name, vox_x, vox_y, self.player.direction, 1)
+            # スプライトの移動
+            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
+            self.vox.move_sprite(self.player.name, vox_x, vox_y, self.player.direction, 1)
 
-                # 敵の移動はテンプレートを複数箇所に表示する
-                for enemy in self.enemies:
-                    vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
-                    self.vox.display_sprite_template(enemy.name, vox_x, vox_y, enemy.direction, 1)
+            # 敵の移動はテンプレートを複数箇所に表示する
+            for enemy in self.enemies:
+                vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
+                self.vox.display_sprite_template(enemy.name, vox_x, vox_y, enemy.direction, 1)
 
-                # ミサイルはdotとして表示
-                for missile in self.missiles + self.enemy_missiles:
-                    vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.height)
-                    self.vox.display_dot(vox_x, vox_y, missile.direction, missile.color_id, missile.width,
-                                         missile.height)
+            # ミサイルはdotとして表示
+            for missile in self.missiles + self.enemy_missiles:
+                vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.height)
+                self.vox.display_dot(vox_x, vox_y, missile.direction, missile.color_id, missile.width,
+                                     missile.height)
 
+            # ゲームクリアの表示と画面を青に変更
+            if self.game_clear:
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=0, green=0,
+                                         blue=1, alpha=0.8)
+                self.vox.set_command('gameClear')
+
+            # ゲームオーバーの表示と画面を赤に変更
+            if self.game_over:
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0,
+                                         blue=0, alpha=0.8)
+                self.vox.set_command('gameOver')
+
+            self.vox.send_data()
+
+            # ゲームクリア、ゲームオーバー時に1秒待ってから再度データを送信
+            if self.game_clear or self.game_over:
+                time.sleep(1)
                 self.vox.send_data()
-                self.vox.clear_data()
+
+            self.vox.clear_data()
 
     def draw(self):
         pyxel.cls(0)
@@ -288,18 +303,6 @@ class App:
 
     def convert_dot_position_to_voxelamming(self, x, y, height=1):
         return x - self.window_width // 2 + 0.5, self.window_height // 2 - (y + height / 2)
-
-
-    def send_command(self, command):
-        # ゲームオーバーを送信（ウインドウを赤に変更）
-        self.vox.set_box_size(self.dot_size)
-        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0, blue=0,
-                                 alpha=0.8)
-        # スコアはサイズ24x2として、中心基準で表示する位置を計算する
-        self.vox.set_game_score(self.score, -66, -57)
-        self.vox.set_command(command)
-        self.vox.send_data()
-        self.vox.clear_data()
 
 
 if __name__ == "__main__":
