@@ -119,7 +119,9 @@ class DotArtEditor:
                 else:
                     rgb = pyxel_palette[color_id]
                     img.putpixel((x, y), (rgb[0], rgb[1], rgb[2], 255))
-        img = img.resize((self.canvas_size * self.pixel_size, self.canvas_size * self.pixel_size))
+
+        # リサイズ時に最近傍補間を使用してぼけを防ぐ
+        img = img.resize((self.canvas_size * self.pixel_size, self.canvas_size * self.pixel_size), Image.NEAREST)
         img.save(f'output_image/{self.file_name}.png')
         print(f"PNGエクスポート完了: {self.file_name}.png")
 
@@ -161,8 +163,10 @@ if __name__ == "__main__":
     # FILE_NAME = "rocket_8x8"
     # FILE_NAME = "mouse_8x8"
     # FILE_NAME = "cat_8x8"
-    FILE_NAME = "starship_8x8"
+    # FILE_NAME = "starship_8x8"
     # FILE_NAME = "enemy_8x8"
+    # FILE_NAME = "bullet_red_8x8"
+    FILE_NAME = "bullet_yellow_8x8"
     CANVAS_SIZE = 8  # 4, 8, 16, 32のいずれか
 
     DotArtEditor(FILE_NAME, canvas_size=CANVAS_SIZE)
