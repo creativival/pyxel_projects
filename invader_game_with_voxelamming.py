@@ -70,6 +70,7 @@ class App:
         # プレイヤーの設定
         self.player = Player(self.window_width // 2, self.window_height - 10, 2)
         self.missiles = []
+        self.player_missile_speed = 2
 
         # 敵の設定
         self.enemy_rows = 3
@@ -91,42 +92,32 @@ class App:
         # ボクセラミングの設定
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
         self.window_angle = 80  # ARウインドウの傾き（度）
-
-        # ボクセラミングの初期化
         self.vox = Voxelamming('1000')
-        self.vox.set_box_size(self.dot_size)
-        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
-                                 alpha=0.8)
-        self.vox.set_game_score(self.score)
+        self.init_voxelamming()
 
-        # プレイヤーのスプライトを表示
-        vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
-        self.vox.create_sprite(self.player.name, self.player.dot_data, vox_x, vox_y, self.player.direction, 1)
-
-        # 敵は複数のため、テンプレートを作成して、それを複数箇所に表示する
-        self.vox.create_sprite(Enemy.name, Enemy.dot_data)
-        for enemy in self.enemies:
-            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
-            self.vox.move_sprite(enemy.name, vox_x, vox_y, enemy.direction, 1)
-        self.vox.send_data()
-        self.vox.clear_data()
-
-        # Pyxelの初期化
+        # Pyxelの初期化（self.voxを設定後に実行する）
         pyxel.init(self.window_width, self.window_height, title="Pyxel Invader Game", fps=30)
+        pyxel.mouse(True)
         pyxel.load("invader_game.pyxres")
         pyxel.run(self.update, self.draw)
 
     def update(self):
         if self.game_over or self.game_clear:
+            # カーソル表示
+            pyxel.mouse(True)
+
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
                 self.reset_game()
             return
+
+        # カーソルの非表示
+        pyxel.mouse(False)
 
         # プレイヤーの操作
         self.player.update()
 
         if pyxel.btnp(pyxel.KEY_SPACE):
-            missile_x = self.player.x + 3
+            missile_x = self.player.x + self.player_missile_speed
             missile_y = self.player.y
             missile_clor_id = 10  # 青色
             missile_direction = 0
@@ -204,48 +195,8 @@ class App:
         if not self.enemies:
             self.game_clear = True
 
-        # スプライトの情報を0.1秒ごとに送信
-        if pyxel.frame_count % 3 == 0 or self.game_clear or self.game_over:  # PyxelのデフォルトFPSは30
-            self.vox.set_box_size(self.dot_size)
-            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
-                                     blue=0, alpha=0.5)
-            self.vox.set_game_score(self.score, -66, 57)
-
-            # スプライトの移動
-            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
-            self.vox.move_sprite(self.player.name, vox_x, vox_y, self.player.direction, 1)
-
-            # 敵の移動はテンプレートを複数箇所に表示する
-            for enemy in self.enemies:
-                vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
-                self.vox.display_sprite_template(enemy.name, vox_x, vox_y, enemy.direction, 1)
-
-            # ミサイルはdotとして表示
-            for missile in self.missiles + self.enemy_missiles:
-                vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.height)
-                self.vox.display_dot(vox_x, vox_y, missile.direction, missile.color_id, missile.width,
-                                     missile.height)
-
-            # ゲームクリアの表示と画面を青に変更
-            if self.game_clear:
-                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=0, green=0,
-                                         blue=1, alpha=0.8)
-                self.vox.set_command('gameClear')
-
-            # ゲームオーバーの表示と画面を赤に変更
-            if self.game_over:
-                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0,
-                                         blue=0, alpha=0.8)
-                self.vox.set_command('gameOver')
-
-            self.vox.send_data()
-
-            # ゲームクリア、ゲームオーバー時に1秒待ってから再度データを送信
-            if self.game_clear or self.game_over:
-                time.sleep(1)
-                self.vox.send_data()
-
-            self.vox.clear_data()
+        # ボクセラミングの更新
+        self.update_voxelamming()
 
     def draw(self):
         pyxel.cls(0)
@@ -253,8 +204,12 @@ class App:
 
         if self.game_clear:
             pyxel.text(pyxel.width // 2 - 20, pyxel.height // 2, "GAME CLEAR!", pyxel.frame_count % 16)
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 + 8, "Click to start",
+                       pyxel.frame_count % 16)
         elif self.game_over:
             pyxel.text(pyxel.width // 2 - 20, pyxel.height // 2, "GAME OVER", pyxel.frame_count % 16)
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 + 8, "Click to start",
+                       pyxel.frame_count % 16)
         else:
             # プレイヤーの描画
             pyxel.blt(self.player.x, self.player.y, self.player.img, self.player.u, self.player.v, self.player.w,
@@ -297,6 +252,71 @@ class App:
                 enemy_y = row * 12 + 20
                 enemy = Enemy(enemy_x, enemy_y)
                 self.enemies.append(enemy)
+
+    def init_voxelamming(self):
+
+        # ボクセラミングの初期化
+        self.vox.set_box_size(self.dot_size)
+        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
+                                 alpha=0.8)
+        self.vox.set_game_score(self.score)
+
+        # プレイヤーのスプライトを表示
+        vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
+        self.vox.create_sprite(self.player.name, self.player.dot_data, vox_x, vox_y, self.player.direction, 1)
+
+        # 敵は複数のため、テンプレートを作成して、それを複数箇所に表示する
+        self.vox.create_sprite(Enemy.name, Enemy.dot_data)
+        for enemy in self.enemies:
+            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
+            self.vox.move_sprite(enemy.name, vox_x, vox_y, enemy.direction, 1)
+
+        self.vox.send_data()
+        self.vox.clear_data()
+
+    def update_voxelamming(self):
+        # スプライトの情報を0.1秒ごとに送信
+        if pyxel.frame_count % 3 == 0 or self.game_clear or self.game_over:  # PyxelのデフォルトFPSは30
+            self.vox.set_box_size(self.dot_size)
+            self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
+                                     blue=0, alpha=0.5)
+            self.vox.set_game_score(self.score, -66, 57)
+
+            # スプライトの移動
+            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
+            self.vox.move_sprite(self.player.name, vox_x, vox_y, self.player.direction, 1)
+
+            # 敵の移動はテンプレートを複数箇所に表示する
+            for enemy in self.enemies:
+                vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
+                self.vox.display_sprite_template(enemy.name, vox_x, vox_y, enemy.direction, 1)
+
+            # ミサイルはdotとして表示
+            for missile in self.missiles + self.enemy_missiles:
+                vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.height)
+                self.vox.display_dot(vox_x, vox_y, missile.direction, missile.color_id, missile.width,
+                                     missile.height)
+
+            # ゲームクリアの表示と画面を青に変更
+            if self.game_clear:
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=0, green=0,
+                                         blue=1, alpha=0.8)
+                self.vox.set_command('gameClear')
+
+            # ゲームオーバーの表示と画面を赤に変更
+            if self.game_over:
+                self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0,
+                                         blue=0, alpha=0.8)
+                self.vox.set_command('gameOver')
+
+            self.vox.send_data()
+
+            # ゲームクリア、ゲームオーバー時に1秒待ってから再度データを送信
+            if self.game_clear or self.game_over:
+                time.sleep(1)
+                self.vox.send_data()
+
+            self.vox.clear_data()
 
     def convert_sprite_position_to_voxelamming(self, x, y):
         return x - self.window_width // 2 + 4, self.window_height // 2 - (y + 4)

@@ -122,36 +122,28 @@ class App:
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
         self.window_angle = 80  # ARウインドウの傾き（度）
         self.sprite_base_diameter = 8  # スプライトの基本直径（スプライトの送信スケールの基準値）
-
-        # ボクセラミングの初期化
         self.vox = Voxelamming('1000')
-        self.vox.set_box_size(self.dot_size)
-        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
-                                 alpha=0.8)
-        # スコアはサイズ24x2として、中心基準で表示する位置を計算する
-        self.vox.set_game_score(self.score, -28, 29)
-        cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
-        cat_scale = self.cat.diameter / self.sprite_base_diameter
-        self.vox.create_sprite(self.cat.name, self.cat.dot_data, cat_x, cat_y, self.cat.direction, cat_scale)
-        mouse_x, mouse_y = self.convert_sprite_position_to_voxelamming(self.mouse.x, self.mouse.y)  # マウスの位置を変換
-        mouse_scale = self.mouse.diameter / self.sprite_base_diameter
-        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, mouse_x, mouse_y, self.mouse.direction,
-                               mouse_scale)
-        self.vox.send_data()
-        self.vox.clear_data()
+        self.init_voxelamming()
 
         # Pyxelの初期化
         pyxel.init(self.window_width, self.window_height, title='Cat Game')
+        pyxel.mouse(True)
         pyxel.load('cat_game.pyxres')
         pyxel.run(self.update, self.draw)
 
     def update(self):
         if not self.game_started or self.game_over:
+            # カーソル表示
+            pyxel.mouse(True)
+
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
                 self.reset_game()
             return
 
-        self.mouse.move()  # マウスの位置を更新
+        # カーソルの非表示
+        pyxel.mouse(False)
+
+        self.mouse.move()  # マウスを動かす
         self.cat.chase(self.mouse)  # 猫がマウスを追いかける
 
         # 衝突判定: 猫の円がマウスに触れるとゲームオーバー
@@ -165,8 +157,53 @@ class App:
             self.score += 1
             self.last_score_update_time = pyxel.frame_count
 
+        # ボクセラミングの更新
+        self.update_voxelamming()
+
+    def draw(self):
+        pyxel.cls(1)
+
+        # スコアを左上に表示する
+        pyxel.text(2, 2, f"Score: {self.score}", pyxel.COLOR_WHITE)
+
+        if not self.game_started:
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 - 8, "Click to start",
+                       pyxel.frame_count % 16)
+            return
+
+        if self.game_over:
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 - 8, "Game Over!", pyxel.frame_count % 16)
+            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 + 8, "Click to start",
+                       pyxel.frame_count % 16)
+            return
+
+        # 徐々に大きくなる円を描画する（スプライトのサイズを表現）
+        pyxel.circ(self.cat.x + 4, self.cat.y + 4, self.cat.diameter / 2, pyxel.COLOR_RED)
+        # 猫のスプライトを描画する
+        pyxel.blt(self.cat.x, self.cat.y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1)
+        # マウスのスプライトを描画する
+        pyxel.blt(self.mouse.x, self.mouse.y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
+
+    def init_voxelamming(self):
+        self.vox.set_box_size(self.dot_size)
+        self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
+                                 alpha=0.8)
+        # スコアはサイズ24x2として、中心基準で表示する位置を計算する
+        self.vox.set_game_score(self.score, -28, 29)
+
+        cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
+        cat_scale = self.cat.diameter / self.sprite_base_diameter
+        self.vox.create_sprite(self.cat.name, self.cat.dot_data, cat_x, cat_y, self.cat.direction, cat_scale)
+        mouse_x, mouse_y = self.convert_sprite_position_to_voxelamming(self.mouse.x, self.mouse.y)  # マウスの位置を変換
+        mouse_scale = self.mouse.diameter / self.sprite_base_diameter
+        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, mouse_x, mouse_y, self.mouse.direction,
+                               mouse_scale)
+        self.vox.send_data()
+        self.vox.clear_data()
+
+    def update_voxelamming(self):
         # スプライトの情報を0.1秒ごとに送信
-        if delta_time % 3 == 0 or self.game_over:  # PyxelのデフォルトFPSは30
+        if pyxel.frame_count % 3 == 0 or self.game_over:  # PyxelのデフォルトFPSは30
             self.vox.set_box_size(self.dot_size)
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                      blue=0, alpha=0.5)
@@ -194,34 +231,6 @@ class App:
 
             self.vox.clear_data()
 
-    def draw(self):
-        pyxel.cls(1)
-
-        # スコアを左上に表示する
-        pyxel.text(2, 2, f"Score: {self.score}", pyxel.COLOR_WHITE)
-
-        if not self.game_started:
-            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 - 8, "Click to start",
-                       pyxel.frame_count % 16)
-            self.draw_cursor()  # カスタムカーソルの描画
-            return
-
-        if self.game_over:
-            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 - 8, "Game Over!", pyxel.frame_count % 16)
-            pyxel.text(self.window_width // 2 - 26, self.window_height // 2 + 8, "Click to start",
-                       pyxel.frame_count % 16)
-            self.draw_cursor()  # カスタムカーソルの描画
-            return
-
-        # 徐々に大きくなる円を描画する
-        pyxel.circ(self.cat.x + 4, self.cat.y + 4, self.cat.diameter / 2, pyxel.COLOR_RED)
-
-        # 猫のスプライトを描画する
-        pyxel.blt(self.cat.x, self.cat.y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1)
-
-        # マウスのスプライトを描画する
-        pyxel.blt(self.mouse.x, self.mouse.y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
-
     def convert_sprite_position_to_voxelamming(self, x, y):
         return x - self.window_width // 2 + 4, self.window_height // 2 - (y + 4)
 
@@ -232,12 +241,6 @@ class App:
         self.mouse = Mouse(self)  # マウスの初期化(位置)
         self.game_started = True
         self.game_over = False
-
-    @staticmethod
-    def draw_cursor():
-        cursor_x = pyxel.mouse_x
-        cursor_y = pyxel.mouse_y
-        pyxel.blt(cursor_x - 4, cursor_y - 4, 0, 0, 16, 8, 8, 1)
 
 
 App()
