@@ -289,7 +289,7 @@ class App:
             # 敵の移動はテンプレートを複数箇所に表示する
             for enemy in self.enemies:
                 vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
-                self.vox.display_sprite_template(enemy.name, vox_x, vox_y, enemy.direction, 1)
+                self.vox.move_sprite_clone(enemy.name, vox_x, vox_y, enemy.direction, 1)
 
             # ミサイルはdotとして表示
             for missile in self.missiles + self.enemy_missiles:

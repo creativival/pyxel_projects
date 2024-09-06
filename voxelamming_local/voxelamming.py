@@ -370,10 +370,16 @@ class Voxelamming:
             # display_sprite_templateと同じ処理
             self.display_sprite_template(sprite_name, x, y, direction, scale)
 
+    # スプライトクローンの移動
+    def move_sprite_clone(self, sprite_name, x, y, direction=0, scale=1):
+        # display_sprite_templateと同じ処理
+        self.display_sprite_template(sprite_name, x, y, direction, scale)
+
     # ドット（弾）を表示する
     # ドットの表示は、特別な名前（dot_色_幅_高さ）のテンプレートとして表示する
     def display_dot(self, x, y, direction=0, color_id=10, width=1, height=1):
         template_name = f'dot_{color_id}_{width}_{height}'
+        # display_sprite_templateと同じ処理
         self.display_sprite_template(template_name, x, y, direction, 1)
 
     # テキストを表示する
@@ -381,6 +387,7 @@ class Voxelamming:
     # 一度表示した後はテンプレートが自動で保存されているため、テンプレートをクローンとして表示できる
     def display_text(self, text, x, y, direction=0, scale=1, color_id=7, is_vertical=False):
         template_name = f'text_{text}_{color_id}_{"1" if is_vertical else "0"}'
+        # display_sprite_templateと同じ処理
         self.display_sprite_template(template_name, x, y, direction, scale)
 
     def send_data(self, name=''):
