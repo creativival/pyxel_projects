@@ -36,12 +36,13 @@ class DotArtEditor:
         self.grid = [[-1 for _ in range(self.canvas_size)] for _ in range(self.canvas_size)]  # -1で初期化（透明）
         self.selected_color = -1
 
-        # ボクセラミングの設定
+        # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
         self.window_angle = 80  # ARウインドウの傾き（度）
         self.vox = Voxelamming('1000')
         self.init_voxelamming()
 
+        # Pyxelの初期化
         pyxel.init(self.window_width, self.window_height, title="Dot Art Editor")  # ウィンドウの高さを増やす
         pyxel.mouse(True)
         pyxel.run(self.update, self.draw)

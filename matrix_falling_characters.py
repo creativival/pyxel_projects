@@ -58,7 +58,7 @@ class APP:
         self.y += 1
         if self.y > self.w:
             self.y = -self.w
-            self.pos_x = np.random.randint(0, self.w, (20, 1))
+            self.pos_x = np.random.randint(0, self.w, (self.send_string_num, 1))
 
 
 APP()

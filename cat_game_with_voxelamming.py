@@ -118,7 +118,7 @@ class App:
         self.cat = Cat(self)
         self.mouse = Mouse(self)
 
-        # ボクセラミングの設定
+        # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
         self.window_angle = 80  # ARウインドウの傾き（度）
         self.sprite_base_diameter = 8  # スプライトの基本直径（スプライトの送信スケールの基準値）

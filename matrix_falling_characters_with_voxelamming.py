@@ -34,17 +34,19 @@ class APP:
         # self.font = pyxel.Font("assets/umplus_j12r.bdf")
         # self.font_size = 12
 
-        # ボクセラミングの設定
+        # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 0.5
         self.window_angle = 80
         self.vox = Voxelamming('1000')
+        self.init_voxelamming()
 
+        # Pyxelの初期化
         pyxel.init(self.w, self.w, title="mtr", display_scale=6, fps=30)
         pyxel.mouse(False)
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        pass
+        self.update_voxelamming()
 
     def draw(self):
         pyxel.cls(0)
@@ -62,6 +64,15 @@ class APP:
                 # フォントを指定してテキスト表示
                 pyxel.text(x, y, str(self.random_strings[i][ii]), c, self.font)
 
+        self.y += 1
+        if self.y > self.w:
+            self.y = -self.w
+            self.pos_x = np.random.randint(0, self.w, (self.send_string_num, 1))
+
+    def init_voxelamming(self):
+        pass
+
+    def update_voxelamming(self):
         # 60フレームごとに送信する
         if pyxel.frame_count % 60 == 0:
             self.vox.set_box_size(self.dot_size)
@@ -80,11 +91,6 @@ class APP:
 
             self.vox.send_data()
             self.vox.clear_data()
-
-        self.y += 1
-        if self.y > self.w:
-            self.y = -self.w
-            self.pos_x = np.random.randint(0, self.w, (20, 1))
 
     def convert_text_position_to_voxelamming(self, x, y, text, is_vertical=False):
         if is_vertical:

@@ -89,13 +89,13 @@ class App:
                 enemy = Enemy(enemy_x, enemy_y)
                 self.enemies.append(enemy)
 
-        # ボクセラミングの設定
+        # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
         self.window_angle = 80  # ARウインドウの傾き（度）
         self.vox = Voxelamming('1000')
         self.init_voxelamming()
 
-        # Pyxelの初期化（self.voxを設定後に実行する）
+        # Pyxelの初期化
         pyxel.init(self.window_width, self.window_height, title="Pyxel Invader Game", fps=30)
         pyxel.mouse(True)
         pyxel.load("invader_game.pyxres")
