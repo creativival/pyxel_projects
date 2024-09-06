@@ -1,6 +1,8 @@
 import os
 import pyxel
 from PIL import Image
+# from voxelamming import Voxelamming
+from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
 
 # Pyxelの16色パレットをRGBにマッピング
 pyxel_palette = [
@@ -33,6 +35,12 @@ class DotArtEditor:
         self.colors = [-1] + [i for i in range(16)]  # -1（透明）を追加
         self.grid = [[-1 for _ in range(self.canvas_size)] for _ in range(self.canvas_size)]  # -1で初期化（透明）
         self.selected_color = -1
+
+        # ボクセラミングの設定
+        self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
+        self.window_angle = 80  # ARウインドウの傾き（度）
+        self.vox = Voxelamming('1000')
+        self.init_voxelamming()
 
         pyxel.init(self.window_width, self.window_height, title="Dot Art Editor")  # ウィンドウの高さを増やす
         pyxel.mouse(True)
@@ -67,6 +75,10 @@ class DotArtEditor:
         # テキストファイルからデータをロード
         if pyxel.btnp(pyxel.KEY_L):
             self.load_text_data()
+
+        # テキストファイルからデータをロード
+        if pyxel.btnp(pyxel.KEY_V):
+            self.update_voxelamming()
 
     def draw(self):
         pyxel.cls(0)
@@ -171,6 +183,36 @@ class DotArtEditor:
         except Exception as e:
             print(f"エラーが発生しました: {e}")
 
+    def init_voxelamming(self):
+        # ボクセラミングの初期化
+        self.vox.set_box_size(self.dot_size)
+        self.vox.set_game_screen(self.window_width, self.window_width, self.window_angle, red=1, green=1, blue=0,
+                                 alpha=0.8)
+        # self.vox.set_command('liteRender')
+
+        self.vox.send_data()
+        self.vox.clear_data()
+
+    def update_voxelamming(self):
+        self.vox.set_box_size(self.dot_size)
+        self.vox.set_game_screen(self.window_width, self.window_width, self.window_angle, red=1, green=1,
+                                 blue=0, alpha=0.5)
+
+        # グリッドデータを送信
+        size = self.window_width // self.canvas_size
+        for y in range(self.canvas_size):
+            for x in range(self.canvas_size):
+                color_id = self.grid[y][x]
+                if color_id >= 0:
+                    vox_x, vox_y = self.convert_dot_position_to_voxelamming(x, y, size)
+                    self.vox.display_dot(vox_x, vox_y, 0, color_id, size, size)
+
+        self.vox.send_data()
+        self.vox.clear_data()
+
+    def convert_dot_position_to_voxelamming(self, x, y, size=1):
+        return x * size - self.window_width // 2 + size / 2, self.window_width // 2 - (y * size + size / 2)
+
 
 if __name__ == "__main__":
     # ファイル名を設定する
@@ -178,10 +220,11 @@ if __name__ == "__main__":
     # FILE_NAME = "rocket_8x8"
     # FILE_NAME = "mouse_8x8"
     # FILE_NAME = "cat_8x8"
-    FILE_NAME = "starship_8x8"
+    # FILE_NAME = "starship_8x8"
     # FILE_NAME = "enemy_8x8"
     # FILE_NAME = "bullet_red_8x8"
     # FILE_NAME = "bullet_yellow_8x8"
-    CANVAS_SIZE = 8  # 4, 8, 16, 32, 64のいずれか
+    FILE_NAME = "flower_64x64"
+    CANVAS_SIZE = 64  # 4, 8, 16, 32, 64のいずれか
 
     DotArtEditor(FILE_NAME, canvas_size=CANVAS_SIZE)

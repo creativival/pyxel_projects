@@ -148,7 +148,7 @@ class App:
                 enemy.y += 8
 
                 # 敵が画面下部に到達したらゲームオーバー
-                if enemy.y > pyxel.height - 8:
+                if enemy.y > pyxel.height - 16:
                     self.game_over = True
 
         # 敵のミサイル発射
@@ -293,7 +293,7 @@ class App:
 
             # ミサイルはdotとして表示
             for missile in self.missiles + self.enemy_missiles:
-                vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.height)
+                vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.width, missile.height)
                 self.vox.display_dot(vox_x, vox_y, missile.direction, missile.color_id, missile.width,
                                      missile.height)
 
@@ -321,8 +321,8 @@ class App:
     def convert_sprite_position_to_voxelamming(self, x, y):
         return x - self.window_width // 2 + 4, self.window_height // 2 - (y + 4)
 
-    def convert_dot_position_to_voxelamming(self, x, y, height=1):
-        return x - self.window_width // 2 + 0.5, self.window_height // 2 - (y + height / 2)
+    def convert_dot_position_to_voxelamming(self, x, y, width=1, height=1):
+        return x - self.window_width // 2 + width / 2, self.window_height // 2 - (y + height / 2)
 
 
 if __name__ == "__main__":
