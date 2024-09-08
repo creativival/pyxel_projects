@@ -66,7 +66,7 @@ class Ball:
         self.x = self.paddle.x + self.paddle.width // 2
         self.y = self.paddle.y - self.radius - 1
         self.game_state.ball_attached = True
-        self.dx = random.choice([-0.5, 0.5])
+        self.dx = 0.5
         self.dy = -0.5
 
     def update(self):
@@ -80,7 +80,7 @@ class Ball:
             # スペースキーを押すとボールが発射される
             if pyxel.btnp(pyxel.KEY_SPACE):
                 self.game_state.ball_attached = False
-                self.dx = random.choice([-0.5, 0.5])
+                self.dx = 0.5
                 self.dy = -0.5
         else:
             self.x += self.dx

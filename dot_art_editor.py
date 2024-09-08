@@ -183,13 +183,14 @@ if __name__ == "__main__":
     # FILE_NAME = "bullet_red_8x8"
     # FILE_NAME = "bullet_yellow_8x8"
     # FILE_NAME = "rocket_16x16"
-    FILE_NAME = "arkanoid_bricks_8x8"
+    # FILE_NAME = "arkanoid_bricks_8x8"
     # FILE_NAME = "arkanoid_paddle_16x16"
+    FILE_NAME = "arkanoid_paddle_32x32"
     # FILE_NAME = "flower_64x64"
     # CANVAS_SIZE = 4  # 4, 8, 16, 32, 64のいずれか
-    CANVAS_SIZE = 8  # 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 8  # 4, 8, 16, 32, 64のいずれか
     # CANVAS_SIZE = 16  # 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 32  # 4, 8, 16, 32, 64のいずれか
+    CANVAS_SIZE = 32  # 4, 8, 16, 32, 64のいずれか
     # CANVAS_SIZE = 64  # 4, 8, 16, 32, 64のいずれか
 
     DotArtEditor(FILE_NAME, canvas_size=CANVAS_SIZE)
