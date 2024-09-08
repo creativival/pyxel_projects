@@ -226,10 +226,10 @@ class App:
         self.vox.set_command('liteRender')
 
         # パドルのスプライトを表示
-        self.vox.create_sprite(self.paddle.name, self.paddle.dot_data)
+        self.vox.create_sprite(self.paddle.name, self.paddle.dot_data, visible=False)
 
         # bricksのスプライトを作成
-        self.vox.create_sprite(Bricks.name, Bricks.dot_data)
+        self.vox.create_sprite(Bricks.name, Bricks.dot_data, visible=False)
 
         self.vox.send_data()
         self.vox.clear_data()
@@ -245,19 +245,19 @@ class App:
             self.vox.set_command('liteRender')
 
             # パドルのスプライトの移動
-            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(
+            vox_x, vox_y = self.convert_position_to_voxelamming(
                 self.paddle.x, self.paddle.y, self.paddle.width, self.paddle.height)
             self.vox.move_sprite(self.paddle.name, vox_x, vox_y, 0, 1)
 
             # bricksの移動はテンプレートを複数箇所に表示する
             for brick in self.bricks.brick_list:
                 brick_x, brick_y, brick_width, brick_height = brick
-                vox_x, vox_y = self.convert_sprite_position_to_voxelamming(
+                vox_x, vox_y = self.convert_position_to_voxelamming(
                     brick_x, brick_y, brick_width, brick_height)
                 self.vox.move_sprite(Bricks.name, vox_x, vox_y, 0, 1)
 
             # ボールのスプライトを移動
-            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(
+            vox_x, vox_y = self.convert_position_to_voxelamming(
                 self.ball.x, self.ball.y, self.ball.radius * 2, self.ball.radius * 2)
             self.vox.display_dot(vox_x, vox_y, 0, 8, self.ball.radius * 2, self.ball.radius * 2)
 
@@ -282,11 +282,8 @@ class App:
 
             self.vox.clear_data()
 
-    def convert_sprite_position_to_voxelamming(self, x, y, width, height):
+    def convert_position_to_voxelamming(self, x, y, width=1, height=1):
         return x - self.window_width // 2 + width // 2, self.window_height // 2 - (y + height // 2)
-
-    def convert_dot_position_to_voxelamming(self, x, y, width=1, height=1):
-        return x - self.window_width // 2 + width / 2, self.window_height // 2 - (y + height / 2)
 
 
 # ゲームの実行

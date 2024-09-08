@@ -205,14 +205,14 @@ class DotArtEditor:
             for x in range(self.canvas_size):
                 color_id = self.grid[y][x]
                 if color_id >= 0:
-                    vox_x, vox_y = self.convert_dot_position_to_voxelamming(x, y, size)
+                    vox_x, vox_y = self.convert_position_to_voxelamming(x, y, size, size)
                     self.vox.display_dot(vox_x, vox_y, 0, color_id, size, size)
 
         self.vox.send_data()
         self.vox.clear_data()
 
-    def convert_dot_position_to_voxelamming(self, x, y, size=1):
-        return x * size - self.window_width // 2 + size / 2, self.window_width // 2 - (y * size + size / 2)
+    def convert_position_to_voxelamming(self, x, y, width=1, height=1):
+        return x - self.window_width // 2 + width // 2, self.window_height // 2 - (y + height // 2)
 
 
 if __name__ == "__main__":

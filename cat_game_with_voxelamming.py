@@ -184,6 +184,14 @@ class App:
         # マウスのスプライトを描画する
         pyxel.blt(self.mouse.x, self.mouse.y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
 
+    def reset_game(self):
+        self.score = 0  # スコアをリセット
+        self.last_score_update_time = pyxel.frame_count  # タイマーをリセット
+        self.cat = Cat(self)  # 猫の初期化(位置、サイズ)
+        self.mouse = Mouse(self)  # マウスの初期化(位置)
+        self.game_started = True
+        self.game_over = False
+
     def init_voxelamming(self):
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
@@ -193,8 +201,8 @@ class App:
         self.vox.set_command('liteRender')
 
         # 猫とマウスのスプライトを作成
-        self.vox.create_sprite(self.cat.name, self.cat.dot_data)
-        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data)
+        self.vox.create_sprite(self.cat.name, self.cat.dot_data, visible=False)
+        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, visible=False)
 
         self.vox.send_data()
         self.vox.clear_data()
@@ -208,12 +216,14 @@ class App:
             self.vox.set_game_score(self.score, -28, 29)
             self.vox.set_command('liteRender')
 
-            cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
+            cat_x, cat_y = self.convert_position_to_voxelamming(self.cat.x, self.cat.y, self.cat.w, self.cat.h)
             cat_scale = self.cat.diameter / self.sprite_base_diameter
             self.vox.move_sprite(self.cat.name, cat_x, cat_y, self.cat.direction, cat_scale)
-            mouse_x, mouse_y = self.convert_sprite_position_to_voxelamming(self.mouse.x, self.mouse.y)  # マウスの位置を変換
+
+            mouse_x, mouse_y = self.convert_position_to_voxelamming(self.mouse.x, self.mouse.y, self.cat.w, self.cat.h)
             mouse_scale = self.mouse.diameter / self.sprite_base_diameter
             self.vox.move_sprite(self.mouse.name, mouse_x, mouse_y, self.mouse.direction, mouse_scale)
+
             self.vox.send_data()
 
             # ゲームオーバーの表示と画面を赤に変更
@@ -231,16 +241,8 @@ class App:
 
             self.vox.clear_data()
 
-    def convert_sprite_position_to_voxelamming(self, x, y):
-        return x - self.window_width // 2 + 4, self.window_height // 2 - (y + 4)
-
-    def reset_game(self):
-        self.score = 0  # スコアをリセット
-        self.last_score_update_time = pyxel.frame_count  # タイマーをリセット
-        self.cat = Cat(self)  # 猫の初期化(位置、サイズ)
-        self.mouse = Mouse(self)  # マウスの初期化(位置)
-        self.game_started = True
-        self.game_over = False
+    def convert_position_to_voxelamming(self, x, y, width=1, height=1):
+        return x - self.window_width // 2 + width // 2, self.window_height // 2 - (y + height // 2)
 
 
 App()

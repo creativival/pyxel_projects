@@ -262,10 +262,10 @@ class App:
         self.vox.set_command('liteRender')
 
         # プレイヤーのスプライトを作成
-        self.vox.create_sprite(self.player.name, self.player.dot_data)
+        self.vox.create_sprite(self.player.name, self.player.dot_data, visible=False)
 
         # 敵のスプライトを作成
-        self.vox.create_sprite(Enemy.name, Enemy.dot_data)
+        self.vox.create_sprite(Enemy.name, Enemy.dot_data, visible=False)
 
         self.vox.send_data()
         self.vox.clear_data()
@@ -280,17 +280,17 @@ class App:
             self.vox.set_command('liteRender')
 
             # スプライトの移動
-            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
+            vox_x, vox_y = self.convert_position_to_voxelamming(self.player.x, self.player.y, self.player.w, self.player.h)
             self.vox.move_sprite(self.player.name, vox_x, vox_y, self.player.direction, 1)
 
             # 敵の移動はテンプレートを複数箇所に表示する
             for enemy in self.enemies:
-                vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
+                vox_x, vox_y = self.convert_position_to_voxelamming(enemy.x, enemy.y, enemy.w, enemy.h)
                 self.vox.move_sprite_clone(enemy.name, vox_x, vox_y, enemy.direction, 1)
 
             # ミサイルはdotとして表示
             for missile in self.missiles + self.enemy_missiles:
-                vox_x, vox_y = self.convert_dot_position_to_voxelamming(missile.x, missile.y, missile.width, missile.height)
+                vox_x, vox_y = self.convert_position_to_voxelamming(missile.x, missile.y, missile.width, missile.height)
                 self.vox.display_dot(vox_x, vox_y, missile.direction, missile.color_id, missile.width,
                                      missile.height)
 
@@ -315,10 +315,7 @@ class App:
 
             self.vox.clear_data()
 
-    def convert_sprite_position_to_voxelamming(self, x, y):
-        return x - self.window_width // 2 + 4, self.window_height // 2 - (y + 4)
-
-    def convert_dot_position_to_voxelamming(self, x, y, width=1, height=1):
+    def convert_position_to_voxelamming(self, x, y, width=1, height=1):
         return x - self.window_width // 2 + width / 2, self.window_height // 2 - (y + height / 2)
 
 
