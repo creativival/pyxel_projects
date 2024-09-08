@@ -77,7 +77,7 @@ class DotArtEditor:
         if pyxel.btnp(pyxel.KEY_L):
             self.load_text_data()
 
-        # テキストファイルからデータをロード
+        # ボクセラミングに送信
         if pyxel.btnp(pyxel.KEY_V):
             self.update_voxelamming()
 

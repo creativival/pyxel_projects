@@ -190,14 +190,12 @@ class App:
                                  alpha=0.8)
         # スコアはサイズ24x2として、中心基準で表示する位置を計算する
         self.vox.set_game_score(self.score, -28, 29)
+        self.vox.set_command('liteRender')
 
-        cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
-        cat_scale = self.cat.diameter / self.sprite_base_diameter
-        self.vox.create_sprite(self.cat.name, self.cat.dot_data, cat_x, cat_y, self.cat.direction, cat_scale)
-        mouse_x, mouse_y = self.convert_sprite_position_to_voxelamming(self.mouse.x, self.mouse.y)  # マウスの位置を変換
-        mouse_scale = self.mouse.diameter / self.sprite_base_diameter
-        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data, mouse_x, mouse_y, self.mouse.direction,
-                               mouse_scale)
+        # 猫とマウスのスプライトを作成
+        self.vox.create_sprite(self.cat.name, self.cat.dot_data)
+        self.vox.create_sprite(self.mouse.name, self.mouse.dot_data)
+
         self.vox.send_data()
         self.vox.clear_data()
 
@@ -208,6 +206,8 @@ class App:
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                      blue=0, alpha=0.5)
             self.vox.set_game_score(self.score, -28, 29)
+            self.vox.set_command('liteRender')
+
             cat_x, cat_y = self.convert_sprite_position_to_voxelamming(self.cat.x, self.cat.y)  # 猫の位置を変換
             cat_scale = self.cat.diameter / self.sprite_base_diameter
             self.vox.move_sprite(self.cat.name, cat_x, cat_y, self.cat.direction, cat_scale)
@@ -220,7 +220,7 @@ class App:
             if self.game_over:
                 self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0,
                                          blue=0, alpha=0.8)
-                self.vox.set_command('gameOver')
+                self.vox.send_game_over()
 
             self.vox.send_data()
 

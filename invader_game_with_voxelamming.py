@@ -254,22 +254,18 @@ class App:
                 self.enemies.append(enemy)
 
     def init_voxelamming(self):
-
         # ボクセラミングの初期化
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
-        self.vox.set_game_score(self.score)
+        self.vox.set_game_score(self.score, -66, 57)
+        self.vox.set_command('liteRender')
 
-        # プレイヤーのスプライトを表示
-        vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
-        self.vox.create_sprite(self.player.name, self.player.dot_data, vox_x, vox_y, self.player.direction, 1)
+        # プレイヤーのスプライトを作成
+        self.vox.create_sprite(self.player.name, self.player.dot_data)
 
-        # 敵は複数のため、テンプレートを作成して、それを複数箇所に表示する
+        # 敵のスプライトを作成
         self.vox.create_sprite(Enemy.name, Enemy.dot_data)
-        for enemy in self.enemies:
-            vox_x, vox_y = self.convert_sprite_position_to_voxelamming(enemy.x, enemy.y)
-            self.vox.move_sprite(enemy.name, vox_x, vox_y, enemy.direction, 1)
 
         self.vox.send_data()
         self.vox.clear_data()
@@ -281,6 +277,7 @@ class App:
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                      blue=0, alpha=0.5)
             self.vox.set_game_score(self.score, -66, 57)
+            self.vox.set_command('liteRender')
 
             # スプライトの移動
             vox_x, vox_y = self.convert_sprite_position_to_voxelamming(self.player.x, self.player.y)
@@ -301,13 +298,13 @@ class App:
             if self.game_clear:
                 self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=0, green=0,
                                          blue=1, alpha=0.8)
-                self.vox.set_command('gameClear')
+                self.vox.send_game_clear()
 
             # ゲームオーバーの表示と画面を赤に変更
             if self.game_over:
                 self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0,
                                          blue=0, alpha=0.8)
-                self.vox.set_command('gameOver')
+                self.vox.send_game_over()
 
             self.vox.send_data()
 

@@ -34,6 +34,7 @@ class DotArtEditor:
         self.grid = [[-1 for _ in range(self.canvas_size)] for _ in range(self.canvas_size)]  # -1で初期化（透明）
         self.selected_color = -1
 
+        # Pyxelの初期化
         pyxel.init(self.window_width, self.window_height, title="Dot Art Editor")  # ウィンドウの高さを増やす
         pyxel.mouse(True)
         pyxel.run(self.update, self.draw)
@@ -174,14 +175,21 @@ class DotArtEditor:
 
 if __name__ == "__main__":
     # ファイル名を設定する
-    # FILE_NAME = "rocket_16x16"
     # FILE_NAME = "rocket_8x8"
     # FILE_NAME = "mouse_8x8"
     # FILE_NAME = "cat_8x8"
-    FILE_NAME = "starship_8x8"
+    # FILE_NAME = "starship_8x8"
     # FILE_NAME = "enemy_8x8"
     # FILE_NAME = "bullet_red_8x8"
     # FILE_NAME = "bullet_yellow_8x8"
+    # FILE_NAME = "rocket_16x16"
+    FILE_NAME = "arkanoid_bricks_8x8"
+    # FILE_NAME = "arkanoid_paddle_16x16"
+    # FILE_NAME = "flower_64x64"
+    # CANVAS_SIZE = 4  # 4, 8, 16, 32, 64のいずれか
     CANVAS_SIZE = 8  # 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 16  # 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 32  # 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 64  # 4, 8, 16, 32, 64のいずれか
 
     DotArtEditor(FILE_NAME, canvas_size=CANVAS_SIZE)
