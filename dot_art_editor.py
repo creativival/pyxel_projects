@@ -189,8 +189,8 @@ if __name__ == "__main__":
     # FILE_NAME = "arkanoid_paddle_16x16"
     # FILE_NAME = "arkanoid_paddle_32x32"
     # FILE_NAME = "flower_64x64"
-    # FILE_NAME = "pipe_32x32"
-    # FILE_NAME = "pipe_reverse_32x32"
+    # FILE_NAME = "pipe_bottom_32x32"
+    # FILE_NAME = "pipe_top_32x32"
     # CANVAS_SIZE = 2  # 2, 4, 8, 16, 32, 64のいずれか
     CANVAS_SIZE = 4  # 2, 4, 8, 16, 32, 64のいずれか
     # CANVAS_SIZE = 8  # 2, 4, 8, 16, 32, 64のいずれか

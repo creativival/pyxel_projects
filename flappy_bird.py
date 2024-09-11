@@ -39,16 +39,18 @@ class Bird:
 
 class Pipe:
     def __init__(self, x, gap_y, gap_height):
+        self.width = 8
+        self.height = 32
         self.x = x
         self.gap_y = gap_y
+        self.gap_height = gap_height
+        self.y_top = self.gap_y - self.height
+        self.y_bottom = self.gap_y + self.gap_height
         self.img = 0
         self.u = 0
         self.v = 0
         self.w = 8
         self.h = 32
-        self.gap_height = gap_height
-        self.pipe_width = 8
-        self.pipe_height = 32
         self.speed = 1
 
     def update(self):
@@ -57,13 +59,13 @@ class Pipe:
 
     def draw(self):
         # 上のパイプ
-        pyxel.blt(self.x, self.gap_y - self.pipe_height, self.img, self.u, self.v, self.w, self.h)
+        pyxel.blt(self.x, self.gap_y - self.height, self.img, self.u, self.v, self.w, self.h)
         # # 下のパイプ
 
         pyxel.blt(self.x, self.gap_y + self.gap_height, self.img, self.u, self.v + self.h, self.w, self.h)
 
     def is_off_screen(self):
-        return self.x + self.pipe_width < 0
+        return self.x + self.width < 0
 
 
 class App:
@@ -71,12 +73,12 @@ class App:
         self.window_width = 80
         self.window_height = 60
         self.pipes = []
-        self.pipe_gap = 20
-        self.pipe_interval = 30
+        self.pipe_gap = 20  # パイプ間の隙間の高さ
+        self.pipe_interval = 30  # パイプの出現間隔
+        self.pipe_position_variation = 10  # パイプ位置のばらつき範囲をインスタンス変数に設定
         self.pipe_timer = 0
         self.score = 0
         self.game_over = False
-
         self.bird = Bird(self)
 
         pyxel.init(self.window_width, self.window_height, title="Flappy Bird", fps=30)
@@ -92,7 +94,9 @@ class App:
         # パイプの出現管理
         self.pipe_timer += 1
         if self.pipe_timer > self.pipe_interval:
-            gap_y = random.randint(10, pyxel.height - 30)  # ランダムな位置の調整
+            # パイプの位置にばらつきを持たせるオフセット
+            pipe_position_offset = random.randint(-self.pipe_position_variation, self.pipe_position_variation)
+            gap_y = (self.window_height - self.pipe_gap) // 2 + pipe_position_offset  # ランダムな位置の調整
             self.pipes.append(Pipe(pyxel.width, gap_y, self.pipe_gap))
             self.pipe_timer = 0
 
@@ -109,7 +113,7 @@ class App:
     def check_collision(self):
         # 鳥とパイプの衝突判定
         for pipe in self.pipes:
-            if (pipe.x < self.bird.x + self.bird.size < pipe.x + pipe.pipe_width):
+            if (pipe.x < self.bird.x + self.bird.size < pipe.x + pipe.width):
                 if self.bird.y < pipe.gap_y or self.bird.y > pipe.gap_y + pipe.gap_height:
                     self.game_over = True
 
@@ -128,7 +132,7 @@ class App:
 
         # ゲームオーバー時の表示
         if self.game_over:
-            pyxel.text(30, 30, "GAME OVER", pyxel.frame_count % 16)
+            pyxel.text(24, 30, "GAME OVER", pyxel.frame_count % 16)
 
 
 # ゲームの実行
