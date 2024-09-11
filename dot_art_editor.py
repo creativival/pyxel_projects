@@ -5,21 +5,21 @@ from PIL import Image
 # Pyxelの16色パレットをRGBにマッピング
 pyxel_palette = [
     (0, 0, 0),  # 0: Black
-    (29, 43, 83),  # 1: Dark blue
-    (126, 37, 83),  # 2: Dark purple
-    (0, 135, 81),  # 3: Dark green
-    (171, 82, 54),  # 4: Brown
-    (95, 87, 79),  # 5: Dark gray
-    (194, 195, 199),  # 6: Light gray
-    (255, 241, 232),  # 7: White
-    (255, 0, 77),  # 8: Red
-    (255, 163, 0),  # 9: Orange
-    (255, 236, 39),  # 10: Yellow
-    (0, 228, 54),  # 11: Green
-    (41, 173, 255),  # 12: Blue
-    (131, 118, 156),  # 13: Indigo
-    (255, 119, 168),  # 14: Pink
-    (255, 204, 170)  # 15: Peach
+    (43, 51, 95),  # 1: Dark blue
+    (126, 32, 114),  # 2: Dark purple
+    (24, 149, 156),  # 3: Dark green
+    (139, 72, 82),  # 4: Brown
+    (57, 92, 152),  # 5: Dark gray
+    (169, 193, 255),  # 6: Light gray
+    (238, 238, 238),  # 7: White
+    (212, 24, 108),  # 8: Red
+    (211, 132, 65),  # 9: Orange
+    (233, 195, 91),  # 10: Yellow
+    (112, 198, 169),  # 11: Green
+    (118, 150, 222),  # 12: Blue
+    (163, 163, 163),  # 13: Indigo
+    (255, 151, 152),  # 14: Pink
+    (237, 199, 176)  # 15: Peach
 ]
 
 
@@ -44,9 +44,10 @@ class DotArtEditor:
             pyxel.quit()
 
         # カラーパレット選択（マウスクリック）
+        pallet_width = self.window_width // (len(self.colors) + 1)
         if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
             if pyxel.mouse_y >= 130:  # パレットの位置をクリックした場合
-                palette_index = pyxel.mouse_x // 8
+                palette_index = pyxel.mouse_x // pallet_width
                 if 0 <= palette_index < len(self.colors):
                     self.selected_color = self.colors[palette_index]
 
@@ -102,24 +103,25 @@ class DotArtEditor:
             pyxel.line(line_x, 0, line_x, self.window_width, 1)  # 垂直線
 
         # カラーパレットの描画（最初のパレットは透明）
+        pallet_width = self.window_width // (len(self.colors) + 1)
         for i, color in enumerate(self.colors):
             if color == -1:
                 for dy in range(0, 8, 2):
                     for dx in range(0, 8, 2):
                         color = 7 if (dx // 2 + dy // 2) % 2 == 0 else 13
-                        pyxel.pset(i * 8 + dx, 130 + dy, color)
-                        pyxel.pset(i * 8 + dx + 1, 130 + dy, color)
-                        pyxel.pset(i * 8 + dx, 130 + dy + 1, color)
-                        pyxel.pset(i * 8 + dx + 1, 130 + dy + 1, color)
+                        pyxel.pset(i * pallet_width + dx, 130 + dy, color)
+                        pyxel.pset(i * pallet_width + dx + 1, 130 + dy, color)
+                        pyxel.pset(i * pallet_width + dx, 130 + dy + 1, color)
+                        pyxel.pset(i * pallet_width + dx + 1, 130 + dy + 1, color)
             else:
-                pyxel.rect(i * 8, 130, 8, 8, color)
+                pyxel.rect(i * pallet_width, 130, pallet_width, 8, color)
 
             # 選択中の色を強調表示
             if color == self.selected_color:
                 if color == 7:
-                    pyxel.rectb(i * 8, 130, 8, 8, 13)
+                    pyxel.rectb(i * pallet_width, 130, pallet_width, 8, 13)
                 else:
-                    pyxel.rectb(i * 8, 130, 8, 8, 7)
+                    pyxel.rectb(i * pallet_width, 130, pallet_width, 8, 7)
 
     def export_png(self):
         # ディレクトリが存在しない場合は作成
@@ -176,7 +178,7 @@ class DotArtEditor:
 if __name__ == "__main__":
     # ファイル名を設定する
     # FILE_NAME = "bird_2x2"
-    FILE_NAME = "bird_4x4"
+    # FILE_NAME = "bird_4x4"
     # FILE_NAME = "rocket_8x8"
     # FILE_NAME = "mouse_8x8"
     # FILE_NAME = "cat_8x8"
@@ -184,16 +186,19 @@ if __name__ == "__main__":
     # FILE_NAME = "enemy_8x8"
     # FILE_NAME = "bullet_red_8x8"
     # FILE_NAME = "bullet_yellow_8x8"
-    # FILE_NAME = "rocket_16x16"
     # FILE_NAME = "arkanoid_bricks_8x8"
+    # FILE_NAME = "mario_8x8"
+    # FILE_NAME = "coin_8x8"
+    FILE_NAME = "goomba_8x8"
+    # FILE_NAME = "rocket_16x16"
     # FILE_NAME = "arkanoid_paddle_16x16"
     # FILE_NAME = "arkanoid_paddle_32x32"
-    # FILE_NAME = "flower_64x64"
     # FILE_NAME = "pipe_bottom_32x32"
     # FILE_NAME = "pipe_top_32x32"
+    # FILE_NAME = "flower_64x64"
     # CANVAS_SIZE = 2  # 2, 4, 8, 16, 32, 64のいずれか
-    CANVAS_SIZE = 4  # 2, 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 8  # 2, 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 4  # 2, 4, 8, 16, 32, 64のいずれか
+    CANVAS_SIZE = 8  # 2, 4, 8, 16, 32, 64のいずれか
     # CANVAS_SIZE = 16  # 2, 4, 8, 16, 32, 64のいずれか
     # CANVAS_SIZE = 32  # 2, 4, 8, 16, 32, 64のいずれか
     # CANVAS_SIZE = 64  # 2, 4, 8, 16, 32, 64のいずれか
