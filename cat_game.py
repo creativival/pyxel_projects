@@ -135,8 +135,8 @@ class App:
             return
 
         if self.game_over:
-            pyxel.text(WINDOW_WIDTH // 2 - 26, WINDOW_HEIGHT // 2 - 8, "Game Over!", pyxel.frame_count % 16)
-            pyxel.text(WINDOW_WIDTH // 2 - 26, WINDOW_HEIGHT // 2 + 8, "Click to start", pyxel.frame_count % 16)
+            pyxel.text(WINDOW_WIDTH // 2 - 30, WINDOW_HEIGHT // 2 - 8, "Game Over!", pyxel.frame_count % 16)
+            pyxel.text(WINDOW_WIDTH // 2 - 30, WINDOW_HEIGHT // 2 + 8, "Click to start", pyxel.frame_count % 16)
             self.draw_cursor()  # カスタムカーソルの描画
             return
 

@@ -175,6 +175,8 @@ class DotArtEditor:
 
 if __name__ == "__main__":
     # ファイル名を設定する
+    # FILE_NAME = "bird_2x2"
+    FILE_NAME = "bird_4x4"
     # FILE_NAME = "rocket_8x8"
     # FILE_NAME = "mouse_8x8"
     # FILE_NAME = "cat_8x8"
@@ -185,12 +187,15 @@ if __name__ == "__main__":
     # FILE_NAME = "rocket_16x16"
     # FILE_NAME = "arkanoid_bricks_8x8"
     # FILE_NAME = "arkanoid_paddle_16x16"
-    FILE_NAME = "arkanoid_paddle_32x32"
+    # FILE_NAME = "arkanoid_paddle_32x32"
     # FILE_NAME = "flower_64x64"
-    # CANVAS_SIZE = 4  # 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 8  # 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 16  # 4, 8, 16, 32, 64のいずれか
-    CANVAS_SIZE = 32  # 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 64  # 4, 8, 16, 32, 64のいずれか
+    # FILE_NAME = "pipe_32x32"
+    # FILE_NAME = "pipe_reverse_32x32"
+    # CANVAS_SIZE = 2  # 2, 4, 8, 16, 32, 64のいずれか
+    CANVAS_SIZE = 4  # 2, 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 8  # 2, 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 16  # 2, 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 32  # 2, 4, 8, 16, 32, 64のいずれか
+    # CANVAS_SIZE = 64  # 2, 4, 8, 16, 32, 64のいずれか
 
     DotArtEditor(FILE_NAME, canvas_size=CANVAS_SIZE)
