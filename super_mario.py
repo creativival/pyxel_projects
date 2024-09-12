@@ -15,13 +15,16 @@ class Player:
         self.gravity = 0.2
         self.dy = 0
         self.on_ground = False
+        self.x_direction = 1
 
     def update(self, blocks):
         # 左右移動
         if pyxel.btn(pyxel.KEY_LEFT):
             self.x -= self.speed
+            self.x_direction = -1
         if pyxel.btn(pyxel.KEY_RIGHT):
             self.x += self.speed
+            self.x_direction = 1
 
         # ジャンプ
         if pyxel.btnp(pyxel.KEY_SPACE) and self.on_ground:
@@ -34,19 +37,20 @@ class Player:
         # 地面との接触判定（簡易的な実装）
         self.on_ground = False
         for block in blocks:
-            if (self.x + self.w > block[0] and self.x < block[0] + block[2] and
-                    self.y + self.h > block[1] and self.y < block[1] + block[3]):
+            if (self.x + self.w > block.x and self.x < block.x + block.w and
+                    self.y + self.h > block.y and self.y < block.y + block.h):
                 if self.dy > 0:  # 落下中のみ接触を検知
-                    self.y = block[1] - self.h
+                    self.y = block.y - self.h
                     self.dy = 0
                     self.on_ground = True
 
     def draw(self, camera_x):
-        pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h)  # プレイヤーの描画
+        w = self.w * self.x_direction
+        pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, w, self.h, 0)  # プレイヤーの描画
 
 
 class Enemy:
-    def __init__(self, x, y):
+    def __init__(self, x, y, distance):
         self.x = x
         self.y = y
         self.img = 0
@@ -55,15 +59,33 @@ class Enemy:
         self.w = 8
         self.h = 8
         self.speed = 1
+        self.visible = True
+        self.start_x = x
+        self.end_x = x + distance  # 移動範囲を追加
 
     def update(self):
         # 左右移動（簡易的に往復）
         self.x += self.speed
-        if self.x < 40 or self.x > 220:  # スクロールに対応して敵の範囲を修正
+        if self.x < self.start_x or self.x > self.end_x:  # スクロールに対応して敵の範囲を修正
             self.speed *= -1
 
     def draw(self, camera_x):
-        pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h)  # 敵キャラの描画
+        if self.visible:
+            pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h, 0)
+
+
+class Brick:
+    def __init__(self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.img = 0
+        self.u = 0
+        self.v = 24
+        self.w = w
+        self.h = h
+
+    def draw(self, camera_x):
+        pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h, 0)
 
 
 class Coin:
@@ -77,26 +99,39 @@ class Coin:
         self.h = 8
         self.visible = True
 
+    def draw(self, camera_x):
+        if self.visible:
+            pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h, 0)
+
+
+class Flag:
+    def __init__(self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.img = 0
+        self.u = 0
+        self.v = 32
+        self.w = w
+        self.h = h
+
+    def draw(self, camera_x):
+        pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h)
+
 
 class Game:
     def __init__(self):
         pyxel.init(160, 120, title="Super Mario", fps=30)
         self.player = Player()
-        self.enemy = Enemy(100, 92)  # 敵キャラクターの位置を修正
-        self.blocks = [(0, 100, 40, 8), (60, 100, 40, 8), (120, 100, 40, 8), (180, 100, 40, 8), (240, 100, 40, 8),
-                       (300, 100, 40, 8)]  # ステージをさらに伸ばす
-        self.stairs = [(332, 92, 16, 8), (340, 84, 16, 8), (348, 76, 16, 8), (356, 68, 16, 8),
-                       (364, 62, 16, 8)]  # 階段のブロック
-        self.coin_block_positions = [(60, 80)]  # コインブロックの位置
-        self.coin_blocks = []  # コインブロック
-        self.coin_collected = False
+        self.enemies = [Enemy(40, 92, 90), Enemy(130, 92, 90)]
+        self.blocks = [Brick(0, 100, 32, 8), Brick(60, 100, 32, 8), Brick(120, 100, 32, 8), Brick(180, 100, 32, 8),
+                       Brick(240, 100, 32, 8), Brick(300, 100, 32, 8)]
+        self.stairs = [Brick(332, 92, 16, 8), Brick(340, 84, 16, 8), Brick(348, 76, 16, 8), Brick(356, 68, 16, 8),
+                       Brick(364, 60, 16, 8)]
+        self.coins = [Coin(60, 80), Coin(120, 70), Coin(180, 60)]
         self.game_over = False
         self.game_clear = False  # ゲームクリアフラグ
-        self.goal_flag = (464, 30, 8, 100)  # ゴールの旗を右端に配置
+        self.flag = Flag(464, 30, 8, 90)  # ゴールの旗を右端に配置
         self.camera_x = 0  # カメラの位置（スクロール）
-
-        for position in self.coin_block_positions:
-            self.coin_blocks.append(Coin(position[0], position[1]))
 
         pyxel.load('super_mario.pyxres')
         pyxel.run(self.update, self.draw)
@@ -106,30 +141,40 @@ class Game:
             return
 
         self.player.update(self.blocks + self.stairs)
-        self.enemy.update()
+        for enemy in self.enemies:
+            enemy.update()
 
         # カメラ（スクロール）の処理
         self.camera_x = max(0, min(self.player.x - 80,
-                                   self.goal_flag[0] - pyxel.width + self.goal_flag[2]))  # フラッグの位置までスクロール
+                                   self.flag.x - pyxel.width + self.flag.w))  # フラッグの位置までスクロール
 
-        # # コインブロックとの接触判定
-        # if not self.coin_collected and (
-        #         self.player.x + self.player.w > self.coin_block[0] and
-        #         self.player.x < self.coin_block[0] + self.coin_block[2] and
-        #         self.player.y + self.player.h > self.coin_block[1] and
-        #         self.player.y < self.coin_block[1] + self.coin_block[3]):
-        #     self.coin_collected = True
+        # コインブロックとの接触判定
+        for coin in self.coins:
+            if (self.player.x + self.player.w > coin.x and
+                    self.player.x < coin.x + coin.w and
+                    self.player.y + self.player.h > coin.y and
+                    self.player.y < coin.y + coin.h):
+                coin.visible = False
 
         # 敵キャラとの衝突判定
-        if (self.player.x + self.player.w > self.enemy.x and
-                self.player.x < self.enemy.x + self.enemy.w and
-                self.player.y + self.player.h > self.enemy.y and
-                self.player.y < self.enemy.y + self.enemy.h):
-            self.game_over = True
+        for enemy in self.enemies:
+            if (self.player.x + self.player.w > enemy.x and
+                    self.player.x < enemy.x + enemy.w and
+                    self.player.y + self.player.h > enemy.y and
+                    self.player.y < enemy.y + enemy.h):
+
+                # 上から接触した場合（プレイヤーの底部が敵の上部に接触）
+                if self.player.dy > 0 and self.player.y + self.player.h - 1 < enemy.y:
+                    # 敵をやっつける
+                    enemy.visible = False
+                    self.player.dy = -2  # ジャンプしたようにプレイヤーが跳ね返る
+                else:
+                    # 横や下から接触した場合はゲームオーバー
+                    self.game_over = True
 
         # プレイヤーがフラッグに大ジャンプして到達した場合
-        if (self.player.x + self.player.w > self.goal_flag[0] and
-                self.player.y < self.goal_flag[1] + self.goal_flag[3]):
+        if (self.player.x + self.player.w > self.flag.x and
+                self.player.y < self.flag.y + self.flag.h):
             self.game_clear = True  # フラッグに捕まったらゲームクリア
 
         # プレイヤーが画面の高さを超えたらゲームオーバー
@@ -143,31 +188,31 @@ class Game:
         self.player.draw(self.camera_x)
 
         # 敵キャラの描画
-        self.enemy.draw(self.camera_x)
+        for enemy in self.enemies:
+            enemy.draw(self.camera_x)
 
         # ブロックの描画
         for block in self.blocks:
-            pyxel.rect(block[0] - self.camera_x, block[1], block[2], block[3], 7)
+            block.draw(self.camera_x)
 
         # 階段の描画
-        for step in self.stairs:
-            pyxel.rect(step[0] - self.camera_x, step[1], step[2], step[3], 7)
+        for block in self.stairs:
+            block.draw(self.camera_x)
 
         # コインブロックの描画
-        for coin in self.coin_blocks:
-            if coin.visible:
-                pyxel.blt(coin.x - self.camera_x, coin.y, coin.img, coin.u, coin.v, coin.w, coin.h)
+        for coin in self.coins:
+            coin.draw(self.camera_x)
 
         # ゴールの旗の描画
-        pyxel.rect(self.goal_flag[0] - self.camera_x, self.goal_flag[1], self.goal_flag[2], self.goal_flag[3], 11)
+        self.flag.draw(self.camera_x)
 
         # ゲームオーバー時の表示
         if self.game_over:
-            pyxel.text(50, 60, "GAME OVER", pyxel.frame_count % 16)
+            pyxel.text(62, 60, "GAME OVER", pyxel.frame_count % 16)
 
         # ゲームクリア時の表示
         if self.game_clear:
-            pyxel.text(50, 60, "YOU WIN!", pyxel.frame_count % 16)
+            pyxel.text(62, 60, "YOU WIN!", pyxel.frame_count % 16)
 
 
 # ゲームの実行
