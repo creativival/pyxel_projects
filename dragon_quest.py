@@ -1,6 +1,7 @@
 import pyxel
 import random
 
+
 # プレイヤークラス
 class Player:
     def __init__(self, window_width, window_height):
@@ -121,7 +122,9 @@ class Game:
         self.dragon = Dragon(self.player, self.window_width, self.window_height)
         self.in_battle = False
         self.game_over = False
-        self.current_enemy = None  # 現在戦闘中のスライム
+        self.game_clear = False
+        self.current_enemy = None  # 現在戦闘中の敵
+        self.current_enemy_name = ""
         self.battle_turn = "player"  # 戦闘のターン ("player" or "slime")
         self.battle_message = ""
         self.battle_log = []  # 戦闘のログを保存
@@ -133,7 +136,7 @@ class Game:
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        if self.game_over:
+        if self.game_over or self.game_clear:
             return
 
         if not self.in_battle:
@@ -141,6 +144,7 @@ class Game:
             self.player.update()
 
             if len([slime for slime in self.slimes if slime.visible]) == 0:  # スライムが全滅した時
+                self.current_enemy_name = "Dragon"
                 # ドラゴンを表示
                 self.dragon.visible = True
                 # ドラゴンとの接触判定
@@ -150,6 +154,7 @@ class Game:
                     self.battle_message = "A Dragon appears!"
                     self.battle_log.append(self.battle_message)
             else:
+                self.current_enemy_name = "Slime"
                 # スライムとの接触判定
                 for slime in self.slimes:
                     if slime.visible and self.check_collision(self.player, slime):
@@ -163,7 +168,7 @@ class Game:
             if self.battle_turn == "player":
                 self.handle_player_turn()
             else:
-                self.handle_slime_turn()
+                self.handle_enemy_turn()
 
     def handle_player_turn(self):
         # プレイヤーのターンでの選択
@@ -179,21 +184,35 @@ class Game:
                 self.battle_log.append(self.battle_message)
                 if self.current_enemy.hp <= 0:
                     self.current_enemy.visible = False
-                    self.battle_message = "You defeated the enemy!"
+                    self.battle_message = f"You defeated the {self.current_enemy_name}!"
                     self.battle_log.append(self.battle_message)
                     self.in_battle = False
                     self.current_enemy = None
+
+                    if self.current_enemy_name == "Dragon":
+                        self.game_clear = True
+                    else:
+                        self.player.hp += 10  # スライムに勝利したらHPを回復
                 else:
-                    self.battle_turn = "slime"  # スライムのターンに変更
+                    self.battle_turn = "enemy"  # 敵のターンに変更
             elif self.selected_option == 1:  # Runを選択
                 self.battle_message = "You ran away!"
                 self.battle_log.append(self.battle_message)
                 self.in_battle = False
 
-    def handle_slime_turn(self):
-        # スライムのターンで攻撃
+                # ドラゴンから逃げる場合はスライムを再配置
+                if self.current_enemy_name == "Dragon":
+                    self.dragon.visible = False
+
+                    for slime in self.slimes:
+                        slime.x = random.randint(10, self.window_width - 10)
+                        slime.y = random.randint(10, self.window_height - 10)
+                        slime.visible = True
+
+    def handle_enemy_turn(self):
+        # 敵のターンで攻撃
         self.player.hp -= self.current_enemy.attack
-        self.battle_message = f"Enemy attacks! Player takes {self.current_enemy.attack} damage."
+        self.battle_message = f"{self.current_enemy_name} attacks! Player takes {self.current_enemy.attack} damage."
         self.battle_log.append(self.battle_message)
         if self.player.hp <= 0:
             self.battle_message = "You were defeated!"
@@ -228,16 +247,17 @@ class Game:
         # ドラゴンの描画
         self.dragon.draw()
 
+        # HPの表示
+        pyxel.text(100, 10, f"Player HP: {self.player.hp}", 9)
+
         # 戦闘メッセージの表示
         if self.in_battle:
+            pyxel.text(100, 20, f"{self.current_enemy_name} HP: {self.current_enemy.hp}", 8)
             pyxel.text(10, 10, self.battle_message, 7)
             pyxel.text(10, 20, "Choose action:", 7)
             for i, option in enumerate(self.battle_options):
                 color = 7 if i == self.selected_option else 6
                 pyxel.text(10, 30 + i * 10, option, color)
-
-            pyxel.text(10, 50, f"Enemy HP: {self.current_enemy.hp}", 8)
-            pyxel.text(10, 60, f"Player HP: {self.player.hp}", 9)
 
         # 戦闘ログの表示
         y_offset = 70
@@ -247,7 +267,11 @@ class Game:
 
         # ゲームオーバー時の表示
         if self.game_over:
-            pyxel.text(20, 30, "GAME OVER", pyxel.frame_count % 16)
+            pyxel.text(40, 30, "GAME OVER", pyxel.frame_count % 16)
+
+        # ゲームクリア時の表示
+        if self.game_clear:
+            pyxel.text(20, 30, "GAME CLEAR!", pyxel.frame_count % 16)
 
 
 # ゲームの実行
