@@ -13,11 +13,10 @@ class Cat:
         '-1 -1 -1 -1 9 9 -1 9 9 -1 -1'
     )
 
-    def __init__(self, app):
-        self.app = app
+    def __init__(self, window_width, window_height):
         self.direction = 0
-        self.x = self.app.window_width // 2 - 4
-        self.y = self.app.window_height // 2 - 4
+        self.x = window_width // 2 - 4
+        self.y = window_height // 2 - 4
         self.img = 0
         self.u = 0
         self.v = 0
@@ -57,11 +56,12 @@ class Mouse:
         '-1 13 13 13 -1 -1 -1 -1 -1 13 -1 -1 13 -1 -1 -1'
     )
 
-    def __init__(self, app):
-        self.app = app
+    def __init__(self, window_width, window_height):
+        self.window_width = window_width
+        self.window_height = window_height
         self.direction = 0
-        self.x = (self.app.window_width // 2 - 4) + 20
-        self.y = self.app.window_height // 2 - 4
+        self.x = (self.window_width // 2 - 4) + 20
+        self.y = self.window_height // 2 - 4
         self.img = 0
         self.u = 0
         self.v = 8
@@ -102,8 +102,8 @@ class Mouse:
             self.direction = -90
 
         # 画面内に動きを制限する
-        self.x = max(-4, min(self.app.window_width - 4, self.x))
-        self.y = max(-4, min(self.app.window_height - 4, self.y))
+        self.x = max(-4, min(self.window_width - 4, self.x))
+        self.y = max(-4, min(self.window_height - 4, self.y))
 
 
 class App:
@@ -115,8 +115,10 @@ class App:
         self.last_score_update_time = 0  # スコアを更新するためのタイマー
         self.game_started = False
         self.game_over = False
-        self.cat = Cat(self)
-        self.mouse = Mouse(self)
+
+        # インスタンスを作成
+        self.cat = Cat(self.window_width, self.window_height)
+        self.mouse = Mouse(self.window_width, self.window_height)
 
         # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）

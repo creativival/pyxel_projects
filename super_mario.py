@@ -120,7 +120,8 @@ class Flag:
 
 class Game:
     def __init__(self):
-        pyxel.init(160, 120, title="Super Mario", fps=30)
+        self.window_width = 160
+        self.window_height = 120
         self.player = Player()
         self.enemies = [Enemy(40, 92, 90), Enemy(130, 92, 90)]
         self.blocks = [Brick(0, 100, 32, 8), Brick(60, 100, 32, 8), Brick(120, 100, 32, 8), Brick(180, 100, 32, 8),
@@ -133,6 +134,7 @@ class Game:
         self.flag = Flag(464, 30, 8, 90)  # ゴールの旗を右端に配置
         self.camera_x = 0  # カメラの位置（スクロール）
 
+        pyxel.init(self.window_width, self.window_height, title="Super Mario", fps=30)
         pyxel.load('super_mario.pyxres')
         pyxel.run(self.update, self.draw)
 

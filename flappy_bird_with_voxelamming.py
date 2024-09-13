@@ -11,9 +11,9 @@ class Bird:
         '-1 10 10 7 7 10 10 0 10 10 8 8 -1 10 10 -1'
     )
 
-    def __init__(self, app):
+    def __init__(self):
         self.x = 10
-        self.y = app.window_height // 2
+        self.y = 30
         self.img = 0
         self.u = 0
         self.v = 64
@@ -150,7 +150,7 @@ class App:
         self.pipe_timer = 0
         self.score = 0
         self.game_over = False
-        self.bird = Bird(self)
+        self.bird = Bird()
 
         # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）

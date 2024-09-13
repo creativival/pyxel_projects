@@ -3,9 +3,9 @@ import random
 
 
 class Bird:
-    def __init__(self, app):
+    def __init__(self):
         self.x = 10
-        self.y = app.window_height // 2
+        self.y = 30
         self.img = 0
         self.u = 0
         self.v = 64
@@ -79,7 +79,7 @@ class App:
         self.pipe_timer = 0
         self.score = 0
         self.game_over = False
-        self.bird = Bird(self)
+        self.bird = Bird()
 
         pyxel.init(self.window_width, self.window_height, title="Flappy Bird", fps=30)
         pyxel.load('flappy_bird.pyxres')

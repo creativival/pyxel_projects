@@ -47,6 +47,17 @@ class Enemy:
         self.w = 8
         self.h = 8
 
+    @classmethod
+    def create_enemies(cls, enemy_rows, enemy_cols):
+        enemies = []
+        for row in range(enemy_rows):
+            for col in range(enemy_cols):
+                enemy_x = col * 16 + 20
+                enemy_y = row * 12 + 20
+                enemy = Enemy(enemy_x, enemy_y)
+                enemies.append(enemy)
+        return enemies
+
 
 class Missile:
     def __init__(self, x, y, color_id, direction=0, width=1, height=1):
@@ -77,17 +88,9 @@ class App:
         self.enemy_cols = 6
         self.enemy_speed = 1
         self.enemy_direction = 1
-        self.enemies = []
+        self.enemies = Enemy.create_enemies(self.enemy_rows, self.enemy_cols)
         self.enemy_missiles = []
         self.enemy_missile_speed = 2
-
-        # 敵の初期化
-        for row in range(self.enemy_rows):
-            for col in range(self.enemy_cols):
-                enemy_x = col * 16 + 20
-                enemy_y = row * 12 + 20
-                enemy = Enemy(enemy_x, enemy_y)
-                self.enemies.append(enemy)
 
         # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
@@ -131,6 +134,11 @@ class App:
             missile.y -= 2
             if missile.y < 0:
                 self.missiles.remove(missile)
+
+        # 敵の移動速度
+        enemy_num = len(self.enemies)
+        if enemy_num < 10:
+            self.enemy_speed *= 1.5
 
         # 敵の移動
         move_down = False
@@ -237,21 +245,10 @@ class App:
         self.missiles = []
 
         # 敵の設定
-        self.enemy_rows = 3
-        self.enemy_cols = 6
-        self.enemy_speed = 1
         self.enemy_direction = 1
-        self.enemies = []
+        self.enemy_speed = 1
+        self.enemies = Enemy.create_enemies(self.enemy_rows, self.enemy_cols)
         self.enemy_missiles = []
-        self.enemy_missile_speed = 2
-
-        # 敵の初期化
-        for row in range(self.enemy_rows):
-            for col in range(self.enemy_cols):
-                enemy_x = col * 16 + 20
-                enemy_y = row * 12 + 20
-                enemy = Enemy(enemy_x, enemy_y)
-                self.enemies.append(enemy)
 
     def init_voxelamming(self):
         # ボクセラミングの初期化

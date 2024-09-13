@@ -86,17 +86,17 @@ def get_sprite_position(x, y):
 
 class App:
     def __init__(self):
-        self.cat = Cat()
-        self.mouse = Mouse()
         self.game_started = False
         self.game_over = False
         self.score = 0  # 初期スコア
         self.last_score_update_time = 0  # スコアを更新するためのタイマー
 
+        # インスタンスを作成
+        self.cat = Cat()
+        self.mouse = Mouse()
+
         pyxel.init(WINDOW_WIDTH, WINDOW_HEIGHT, title='Cat Game')
-
         pyxel.load('cat_game.pyxres')
-
         pyxel.run(self.update, self.draw)
 
     def update(self):

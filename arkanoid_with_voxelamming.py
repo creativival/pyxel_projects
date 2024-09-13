@@ -1,17 +1,7 @@
 import pyxel
-import random
 import time
 # from voxelamming import Voxelamming
 from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
-
-
-class GameState:
-    def __init__(self):
-        self.score = 0
-        self.lives = 3
-        self.game_over = False
-        self.game_clear = False
-        self.ball_attached = True
 
 
 class Paddle:
@@ -65,62 +55,66 @@ class Paddle:
         pyxel.rect(self.x, self.y, self.width, self.height, 7)
 
 
-class Bricks:
+class Brick:
+    width = 8
+    height = 4
     name = 'arkanoid_bricks_8x8'
     dot_data = (
         '-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 '
         '9 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1'
     )
 
-    def __init__(self):
-        self.width = 8
-        self.height = 4
-        self.brick_list = []
-
-    def create(self):
-        # ブロックを作成
-        for i in range(5):  # 5行
-            for j in range(8):  # 8列
-                brick_x = j * (self.width + 1) + 5  # 左に5pxの余白を追加
-                brick_y = i * (self.height + 1) + 10  # 縦方向も調整
-                self.brick_list.append([brick_x, brick_y, self.width, self.height])
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.visible = True
 
     def draw(self):
-        for brick in self.brick_list:
-            brick_x, brick_y, brick_width, brick_height = brick
-            pyxel.rect(brick_x, brick_y, brick_width, brick_height, 9)
+        if self.visible:       
+            pyxel.rect(self.x, self.y, self.width, self.height, 9)
+        
+    @classmethod
+    def create_bricks(cls):
+        # ブロックを作成
+        bricks = []
+        for i in range(5):
+            for j in range(8):
+                x = j * (cls.width + 1) + 5
+                y = i * (cls.height + 1) + 10
+                bricks.append(cls(x, y))
+        return bricks
 
 
 class Ball:
-    def __init__(self, paddle, bricks, game_state):
+    def __init__(self, app, paddle, bricks):
         self.x = 0
         self.y = 0
         self.dx = 0
         self.dy = 0
+        self.app = app
         self.paddle = paddle
         self.bricks = bricks
-        self.game_state = game_state
         self.radius = 1  # ボールの半径を半分に
         self.reset()
 
     def reset(self):
         self.x = self.paddle.x + self.paddle.width // 2
         self.y = self.paddle.y - self.radius - 1
-        self.game_state.ball_attached = True
+        self.app.ball_attached = True
         self.dx = 0.5
         self.dy = -0.5
 
     def update(self):
-        if self.game_state.game_over or self.game_state.game_clear:
+        if self.app.game_over or self.app.game_clear:
             return
 
-        if self.game_state.ball_attached:
+        if self.app.ball_attached:
             self.x = self.paddle.x + self.paddle.width // 2
             self.y = self.paddle.y - self.radius - 1
 
             # スペースキーを押すとボールが発射される
             if pyxel.btnp(pyxel.KEY_SPACE):
-                self.game_state.ball_attached = False
+                self.app.ball_attached = False
                 self.dx = 0.5
                 self.dy = -0.5
         else:
@@ -139,26 +133,26 @@ class Ball:
                 self.dy *= -1  # y方向の速度を反転
 
             # ボールがブロックに当たった場合の処理
-            for brick in self.bricks.brick_list[:]:
-                brick_x, brick_y, brick_width, brick_height = brick
-                if (brick_x < self.x < brick_x + brick_width and
-                        brick_y < self.y < brick_y + brick_height):
-                    self.bricks.brick_list.remove(brick)
+            for brick in self.bricks[:]:
+                if (brick.visible and brick.x < self.x < brick.x + brick.width and
+                        brick.y < self.y < brick.y + brick.height):
+                    brick.visible = False  # ブロックを非表示にする
                     self.dy *= -1  # ボールのy方向の速度を反転
-                    self.game_state.score += 10  # スコア加算
+                    self.app.score += 10  # スコア加算
                     break
 
             # 全てのブロックが破壊されたらゲームクリア
-            if len(self.bricks.brick_list) == 0:
-                self.game_state.game_clear = True
+            visible_bricks = [brick for brick in self.bricks if brick.visible]
+            if len(visible_bricks) == 0:
+                self.app.game_clear = True
 
             # ボールが下まで落ちた場合
             if self.y > pyxel.height:
-                self.game_state.lives -= 1  # 残機を減らす
-                if self.game_state.lives > 0:
+                self.app.lives -= 1  # 残機を減らす
+                if self.app.lives > 0:
                     self.reset()
                 else:
-                    self.game_state.game_over = True  # 残機がなくなったらゲームオーバー
+                    self.app.game_over = True  # 残機がなくなったらゲームオーバー
 
     def draw(self):
         pyxel.rect(self.x, self.y, self.radius * 2, self.radius * 2, 8)
@@ -168,11 +162,16 @@ class App:
     def __init__(self):
         self.window_width = 80
         self.window_height = 60
-        self.game_state = GameState()
+        self.score = 0
+        self.lives = 3
+        self.game_over = False
+        self.game_clear = False
+        self.ball_attached = True
+
+        # インスタンスを作成
         self.paddle = Paddle()
-        self.bricks = Bricks()
-        self.bricks.create()
-        self.ball = Ball(self.paddle, self.bricks, self.game_state)
+        self.bricks = Brick.create_bricks()
+        self.ball = Ball(self, self.paddle, self.bricks)
 
         # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
@@ -184,7 +183,7 @@ class App:
         pyxel.run(self.update, self.draw)
 
     def update(self):
-        if self.game_state.game_over or self.game_state.game_clear:
+        if self.game_over or self.game_clear:
             return
 
         # パドルの操作
@@ -200,20 +199,21 @@ class App:
         pyxel.cls(0)  # 画面クリア
         self.paddle.draw()
         self.ball.draw()
-        self.bricks.draw()
+        for brick in self.bricks:
+            brick.draw()
 
         # スコアの表示
-        pyxel.text(1, 2, f"SCORE: {self.game_state.score}", 7)
+        pyxel.text(1, 2, f"SCORE: {self.score}", 7)
 
         # 残機の表示
-        pyxel.text(48, 2, f"LIVES: {self.game_state.lives}", 7)
+        pyxel.text(48, 2, f"LIVES: {self.lives}", 7)
 
         # ゲームオーバー時の表示
-        if self.game_state.game_over:
+        if self.game_over:
             pyxel.text(20, 30, "GAME OVER", pyxel.frame_count % 16)
 
         # ゲームクリア時の表示
-        if self.game_state.game_clear:
+        if self.game_clear:
             pyxel.text(20, 30, "YOU WIN!", pyxel.frame_count % 16)
 
     def init_voxelamming(self):
@@ -221,27 +221,27 @@ class App:
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
-        self.vox.set_game_score(self.game_state.score, -24, 26)
-        self.vox.display_text(f"LIVES: {self.game_state.lives}", 26, 26)
+        self.vox.set_game_score(self.score, -24, 26)
+        self.vox.display_text(f"LIVES: {self.lives}", 26, 26)
         self.vox.set_command('liteRender')
 
         # パドルのスプライトを表示
         self.vox.create_sprite(self.paddle.name, self.paddle.dot_data, visible=False)
 
         # bricksのスプライトを作成
-        self.vox.create_sprite(Bricks.name, Bricks.dot_data, visible=False)
+        self.vox.create_sprite(Brick.name, Brick.dot_data, visible=False)
 
         self.vox.send_data()
         self.vox.clear_data()
 
     def update_voxelamming(self):
         # スプライトの情報を0.1秒ごとに送信
-        if pyxel.frame_count % 2 == 0 or self.game_state.game_clear or self.game_state.game_over:  # PyxelのデフォルトFPSは30
+        if pyxel.frame_count % 2 == 0 or self.game_clear or self.game_over:  # PyxelのデフォルトFPSは30
             self.vox.set_box_size(self.dot_size)
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                      blue=0, alpha=0.5)
-            self.vox.set_game_score(self.game_state.score, -24, 26)
-            self.vox.display_text(f"LIVES: {self.game_state.lives}", 26, 26)
+            self.vox.set_game_score(self.score, -24, 26)
+            self.vox.display_text(f"LIVES: {self.lives}", 26, 26)
             self.vox.set_command('liteRender')
 
             # パドルのスプライトの移動
@@ -250,11 +250,10 @@ class App:
             self.vox.move_sprite(self.paddle.name, vox_x, vox_y, 0, 1)
 
             # bricksの移動はテンプレートを複数箇所に表示する
-            for brick in self.bricks.brick_list:
-                brick_x, brick_y, brick_width, brick_height = brick
+            for brick in self.bricks:
                 vox_x, vox_y = self.convert_position_to_voxelamming(
-                    brick_x, brick_y, brick_width, brick_height)
-                self.vox.move_sprite(Bricks.name, vox_x, vox_y, 0, 1)
+                    brick.x, brick.y, brick.width, brick.height)
+                self.vox.move_sprite(brick.name, vox_x, vox_y, 0, 1)
 
             # ボールのスプライトを移動
             vox_x, vox_y = self.convert_position_to_voxelamming(
@@ -262,13 +261,13 @@ class App:
             self.vox.display_dot(vox_x, vox_y, 0, 8, self.ball.radius * 2, self.ball.radius * 2)
 
             # ゲームクリアの表示と画面を青に変更
-            if self.game_state.game_clear:
+            if self.game_clear:
                 self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=0, green=0,
                                          blue=1, alpha=0.8)
                 self.vox.send_game_clear()
 
             # ゲームオーバーの表示と画面を赤に変更
-            if self.game_state.game_over:
+            if self.game_over:
                 self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=0,
                                          blue=0, alpha=0.8)
                 self.vox.send_game_over()
@@ -276,7 +275,7 @@ class App:
             self.vox.send_data()
 
             # ゲームクリア、ゲームオーバー時に1秒待ってから再度データを送信
-            if self.game_state.game_clear or self.game_state.game_over:
+            if self.game_clear or self.game_over:
                 time.sleep(1)
                 self.vox.send_data()
 
