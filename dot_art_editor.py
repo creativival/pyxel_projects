@@ -191,19 +191,19 @@ if __name__ == "__main__":
     # FILE_NAME = "mario_flag_8x8"
     # FILE_NAME = "coin_8x8"
     # FILE_NAME = "goomba_8x8"
+    # FILE_NAME = "warrior_front_8x8"
+    # FILE_NAME = "warrior_back_8x8"
+    # FILE_NAME = "slime_8x8"
+    # FILE_NAME = "tree_8x8"
     # FILE_NAME = "rocket_16x16"
     # FILE_NAME = "arkanoid_paddle_16x16"
     # FILE_NAME = "mario_blocks_16x16"
-    FILE_NAME = "mario_blocks_32x32"
+    FILE_NAME = "dragon_16x16"
+    # FILE_NAME = "mario_blocks_32x32"
     # FILE_NAME = "arkanoid_paddle_32x32"
     # FILE_NAME = "pipe_bottom_32x32"
     # FILE_NAME = "pipe_top_32x32"
     # FILE_NAME = "flower_64x64"
-    # CANVAS_SIZE = 2  # 2, 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 4  # 2, 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 8  # 2, 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 16  # 2, 4, 8, 16, 32, 64のいずれか
-    CANVAS_SIZE = 32  # 2, 4, 8, 16, 32, 64のいずれか
-    # CANVAS_SIZE = 64  # 2, 4, 8, 16, 32, 64のいずれか
+    CANVAS_SIZE = int(FILE_NAME.split('_')[-1].split('x')[1])  # 2, 4, 8, 16, 32, 64のいずれか
 
     DotArtEditor(FILE_NAME, canvas_size=CANVAS_SIZE)
