@@ -130,6 +130,7 @@ class Game:
         self.battle_log = []  # 戦闘のログを保存
         self.battle_options = ["Attack", "Run"]
         self.selected_option = 0
+        self.log_display_time = 0  # ログ表示のためのタイマー
 
         pyxel.init(self.window_width, self.window_height, title="Dragon Quest", fps=30)
         pyxel.load("dragon_quest.pyxres")
@@ -164,6 +165,7 @@ class Game:
                         self.battle_log.append(self.battle_message)
                         break
         else:
+            self.log_display_time = pyxel.frame_count  # ログ表示開始時のフレーム数を保存
             # 戦闘モード（ターン制）
             if self.battle_turn == "player":
                 self.handle_player_turn()
@@ -179,8 +181,9 @@ class Game:
 
         if pyxel.btnp(pyxel.KEY_SPACE):
             if self.selected_option == 0:  # Attackを選択
-                self.current_enemy.hp -= self.player.attack
-                self.battle_message = "Player attacks!"
+                player_attack = self.player.attack * random.randint(1, 3)
+                self.current_enemy.hp -= player_attack
+                self.battle_message = f"Player attacks! {self.current_enemy_name} takes {player_attack} damage."
                 self.battle_log.append(self.battle_message)
                 if self.current_enemy.hp <= 0:
                     self.current_enemy.visible = False
@@ -207,12 +210,14 @@ class Game:
                     for slime in self.slimes:
                         slime.x = random.randint(10, self.window_width - 10)
                         slime.y = random.randint(10, self.window_height - 10)
+                        slime.hp = 10
                         slime.visible = True
 
     def handle_enemy_turn(self):
         # 敵のターンで攻撃
-        self.player.hp -= self.current_enemy.attack
-        self.battle_message = f"{self.current_enemy_name} attacks! Player takes {self.current_enemy.attack} damage."
+        enemy_attack = self.current_enemy.attack * random.randint(1, 3)
+        self.player.hp -= enemy_attack
+        self.battle_message = f"{self.current_enemy_name} attacks! Player takes {enemy_attack} damage."
         self.battle_log.append(self.battle_message)
         if self.player.hp <= 0:
             self.battle_message = "You were defeated!"
@@ -252,26 +257,29 @@ class Game:
 
         # 戦闘メッセージの表示
         if self.in_battle:
+            # 敵のHPを表示
             pyxel.text(100, 20, f"{self.current_enemy_name} HP: {self.current_enemy.hp}", 8)
-            pyxel.text(10, 10, self.battle_message, 7)
-            pyxel.text(10, 20, "Choose action:", 7)
+
+            # オプションを表示
+            pyxel.text(10, 40, "Choose action:", 7)
             for i, option in enumerate(self.battle_options):
                 color = 7 if i == self.selected_option else 6
-                pyxel.text(10, 30 + i * 10, option, color)
+                pyxel.text(10, 50 + i * 10, option, color)
 
         # 戦闘ログの表示
-        y_offset = 70
-        for log in self.battle_log[-3:]:  # 最新の3件を表示
-            pyxel.text(10, y_offset, log, 7)
-            y_offset += 10
+        if pyxel.frame_count - self.log_display_time < 90:
+            y_offset = 70
+            for log in self.battle_log[-3:]:  # 最新の3件を表示
+                pyxel.text(10, y_offset, log, 7)
+                y_offset += 10
 
         # ゲームオーバー時の表示
         if self.game_over:
-            pyxel.text(40, 30, "GAME OVER", pyxel.frame_count % 16)
+            pyxel.text(60, 30, "GAME OVER", pyxel.frame_count % 16)
 
         # ゲームクリア時の表示
         if self.game_clear:
-            pyxel.text(20, 30, "GAME CLEAR!", pyxel.frame_count % 16)
+            pyxel.text(60, 30, "GAME CLEAR!", pyxel.frame_count % 16)
 
 
 # ゲームの実行
