@@ -358,9 +358,8 @@ class Game:
             self.vox.set_command('liteRender')
 
             # プレイヤーのスプライトの移動
-            player_x = self.player.x - self.camera_x
             vox_x, vox_y = self.convert_position_to_voxelamming(
-                player_x, self.player.y, self.player.w, self.player.h)
+                self.player.x, self.player.y, self.player.w, self.player.h)
 
             if self.player.x_direction == -1:
                 self.vox.move_sprite(self.player.name, vox_x, vox_y, -180, 1)
@@ -369,52 +368,42 @@ class Game:
 
             # 敵のスプライトを移動
             for enemy in self.enemies:
-                enemy_x = enemy.x - self.camera_x
-
-                if enemy.visible and (-20 < enemy_x < pyxel.width):
+                if enemy.visible and (-20 < enemy.x - self.camera_x < pyxel.width):
                     vox_x, vox_y = self.convert_position_to_voxelamming(
-                        enemy_x, enemy.y, enemy.w, enemy.h)
+                        enemy.x, enemy.y, enemy.w, enemy.h)
                     self.vox.move_sprite(enemy.name, vox_x, vox_y, 0, 1)
 
             # blocksの移動はテンプレートを複数箇所に表示する
             for brick in self.blocks:
-                brick_x = brick.x - self.camera_x
-
-                if -20 < brick_x < pyxel.width:
+                if -20 < brick.x - self.camera_x < pyxel.width:
                     vox_x, vox_y = self.convert_position_to_voxelamming(
-                        brick_x, brick.y, brick.w, brick.h)
+                        brick.x, brick.y, brick.w, brick.h)
                     self.vox.move_sprite(brick.name_32x32, vox_x, vox_y, 0, 1)
 
             # stairsの移動はテンプレートを複数箇所に表示する
             for brick in self.stairs:
-                brick_x = brick.x - self.camera_x
-
-                if -20 < brick_x < pyxel.width:
+                if -20 < brick.x - self.camera_x < pyxel.width:
                     vox_x, vox_y = self.convert_position_to_voxelamming(
-                        brick_x, brick.y, brick.w, brick.h)
+                        brick.x, brick.y, brick.w, brick.h)
                     self.vox.move_sprite(brick.name_16x16, vox_x, vox_y, 0, 1)
 
             # コインのスプライトを移動
             for coin in self.coins:
-                coin_x = coin.x - self.camera_x
-
-                if coin.visible and (-20 < coin_x < pyxel.width):
+                if coin.visible and (-20 < coin.x - self.camera_x < pyxel.width):
                     vox_x, vox_y = self.convert_position_to_voxelamming(
-                        coin_x, coin.y, coin.w, coin.h)
+                        coin.x, coin.y, coin.w, coin.h)
                     self.vox.move_sprite(coin.name, vox_x, vox_y, 0, 1)
 
             # フラッグのスプライトの移動
-            flag_x = self.flag.x - self.camera_x
-
-            if -20 < flag_x < pyxel.width:
+            if -20 < self.flag.x - self.camera_x < pyxel.width:
                 # フラッグ
                 vox_x, vox_y = self.convert_position_to_voxelamming(
-                    flag_x, self.flag.y, self.flag.w, 8)
+                    self.flag.x, self.flag.y, self.flag.w, 8)
                 self.vox.move_sprite(self.flag.name, vox_x, vox_y, 0, 1)
 
                 # 支柱
                 vox_x, vox_y = self.convert_position_to_voxelamming(
-                    flag_x, self.flag.y, 1, self.flag.h)
+                    self.flag.x, self.flag.y, 1, self.flag.h)
                 self.vox.display_dot(vox_x, vox_y, 0, 11, 1, self.flag.h)
 
             # ゲームクリアの表示と画面を青に変更
@@ -439,6 +428,7 @@ class Game:
             self.vox.clear_data()
 
     def convert_position_to_voxelamming(self, x, y, width=1, height=1):
+        x = x - self.camera_x
         return x - self.window_width // 2 + width // 2, self.window_height // 2 - (y + height // 2)
 
 
