@@ -24,14 +24,20 @@ class Player:
         if pyxel.btn(pyxel.KEY_RIGHT):
             self.x = min(pyxel.width - self.w, self.x + 2)
         if pyxel.btn(pyxel.KEY_UP):
+            self.y_direction = -1
             self.y = max(0, self.y - 2)
+        else:
+            self.y_direction = 1
         if pyxel.btn(pyxel.KEY_DOWN):
             self.y = min(pyxel.height - self.h, self.y + 2)
 
     def draw(self):
         # プレイヤーの描画
         print(self.x, self.y)
-        pyxel.blt(self.window_width // 2, self.window_height // 2, self.img, self.u, self.v, self.w, self.h, 0)
+        if self.y_direction == 1:
+            pyxel.blt(self.window_width // 2, self.window_height // 2, self.img, self.u, self.v, self.w, self.h, 0)
+        else:
+            pyxel.blt(self.window_width // 2, self.window_height // 2, self.img, self.u + 8, self.v, self.w, self.h, 0)
 
 
 # スライムクラス（敵）
@@ -50,6 +56,31 @@ class Slime:
         self.hp = 10
         self.attack = 2
         self.visible = True
+
+    def draw(self):
+        if self.visible:
+            # スライムの描画
+            x = self.x - self.player.x + self.window_width // 2
+            y = self.y - self.player.y + self.window_height // 2
+            pyxel.blt(x, y, self.img, self.u, self.v, self.w, self.h, 0)
+
+
+# スライムクラス（敵）
+class Dragon:
+    def __init__(self, player, window_width, window_height):
+        self.player = player
+        self.window_width = window_width
+        self.window_height = window_height
+        self.x = random.randint(10, window_width - 42)
+        self.y = random.randint(10, window_height - 42)
+        self.img = 0
+        self.u = 0
+        self.v = 24
+        self.w = 16
+        self.h = 16
+        self.hp = 100
+        self.attack = 5
+        self.visible = False
 
     def draw(self):
         if self.visible:
@@ -87,8 +118,10 @@ class Game:
         self.player = Player(self.window_width, self.window_height)
         self.slimes = [Slime(self.player, self.window_width, self.window_height) for _ in range(3)]  # 3匹のスライムをランダムに配置
         self.trees = [Tree(self.player, self.window_width, self.window_height) for _ in range(10)]  # 樹木を10本ランダムに配置
+        self.dragon = Dragon(self.player, self.window_width, self.window_height)
         self.in_battle = False
-        self.current_slime = None  # 現在戦闘中のスライム
+        self.game_over = False
+        self.current_enemy = None  # 現在戦闘中のスライム
         self.battle_turn = "player"  # 戦闘のターン ("player" or "slime")
         self.battle_message = ""
         self.battle_log = []  # 戦闘のログを保存
@@ -100,18 +133,31 @@ class Game:
         pyxel.run(self.update, self.draw)
 
     def update(self):
+        if self.game_over:
+            return
+
         if not self.in_battle:
             # プレイヤーの移動
             self.player.update()
 
-            # スライムとの接触判定
-            for slime in self.slimes:
-                if slime.visible and self.check_collision(self.player, slime):
+            if len([slime for slime in self.slimes if slime.visible]) == 0:  # スライムが全滅した時
+                # ドラゴンを表示
+                self.dragon.visible = True
+                # ドラゴンとの接触判定
+                if self.check_collision(self.player, self.dragon):
                     self.in_battle = True
-                    self.current_slime = slime
-                    self.battle_message = "A Slime appears!"
+                    self.current_enemy = self.dragon
+                    self.battle_message = "A Dragon appears!"
                     self.battle_log.append(self.battle_message)
-                    break
+            else:
+                # スライムとの接触判定
+                for slime in self.slimes:
+                    if slime.visible and self.check_collision(self.player, slime):
+                        self.in_battle = True
+                        self.current_enemy = slime
+                        self.battle_message = "A Slime appears!"
+                        self.battle_log.append(self.battle_message)
+                        break
         else:
             # 戦闘モード（ターン制）
             if self.battle_turn == "player":
@@ -128,15 +174,15 @@ class Game:
 
         if pyxel.btnp(pyxel.KEY_SPACE):
             if self.selected_option == 0:  # Attackを選択
-                self.current_slime.hp -= self.player.attack
+                self.current_enemy.hp -= self.player.attack
                 self.battle_message = "Player attacks!"
                 self.battle_log.append(self.battle_message)
-                if self.current_slime.hp <= 0:
-                    self.current_slime.visible = False
-                    self.battle_message = "You defeated the Slime!"
+                if self.current_enemy.hp <= 0:
+                    self.current_enemy.visible = False
+                    self.battle_message = "You defeated the enemy!"
                     self.battle_log.append(self.battle_message)
                     self.in_battle = False
-                    self.current_slime = None
+                    self.current_enemy = None
                 else:
                     self.battle_turn = "slime"  # スライムのターンに変更
             elif self.selected_option == 1:  # Runを選択
@@ -146,13 +192,14 @@ class Game:
 
     def handle_slime_turn(self):
         # スライムのターンで攻撃
-        self.player.hp -= self.current_slime.attack
-        self.battle_message = f"Slime attacks! Player takes {self.current_slime.attack} damage."
+        self.player.hp -= self.current_enemy.attack
+        self.battle_message = f"Enemy attacks! Player takes {self.current_enemy.attack} damage."
         self.battle_log.append(self.battle_message)
         if self.player.hp <= 0:
             self.battle_message = "You were defeated!"
             self.battle_log.append(self.battle_message)
             self.in_battle = False
+            self.game_over = True
         else:
             self.battle_turn = "player"  # プレイヤーのターンに戻す
 
@@ -178,6 +225,9 @@ class Game:
         for tree in self.trees:
             tree.draw()
 
+        # ドラゴンの描画
+        self.dragon.draw()
+
         # 戦闘メッセージの表示
         if self.in_battle:
             pyxel.text(10, 10, self.battle_message, 7)
@@ -186,7 +236,7 @@ class Game:
                 color = 7 if i == self.selected_option else 6
                 pyxel.text(10, 30 + i * 10, option, color)
 
-            pyxel.text(10, 50, f"Slime HP: {self.current_slime.hp}", 8)
+            pyxel.text(10, 50, f"Enemy HP: {self.current_enemy.hp}", 8)
             pyxel.text(10, 60, f"Player HP: {self.player.hp}", 9)
 
         # 戦闘ログの表示
@@ -194,6 +244,10 @@ class Game:
         for log in self.battle_log[-3:]:  # 最新の3件を表示
             pyxel.text(10, y_offset, log, 7)
             y_offset += 10
+
+        # ゲームオーバー時の表示
+        if self.game_over:
+            pyxel.text(20, 30, "GAME OVER", pyxel.frame_count % 16)
 
 
 # ゲームの実行
