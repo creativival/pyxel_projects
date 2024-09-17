@@ -219,7 +219,7 @@ class App:
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
-        self.vox.set_game_score(self.score, -24, 26)
+        self.vox.set_game_score(self.score, -24, 24)
         self.vox.set_command('liteRender')
 
         # バードのスプライトを表示
@@ -238,7 +238,7 @@ class App:
             self.vox.set_box_size(self.dot_size)
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                      blue=0, alpha=0.5)
-            self.vox.set_game_score(self.score, -24, 26)
+            self.vox.set_game_score(self.score, -24, 24)
             self.vox.set_command('liteRender')
 
             # バードのスプライトの移動
@@ -249,13 +249,13 @@ class App:
             # パイプの移動はテンプレートを複数箇所に表示する
             for pipe in self.pipes[:]:
                 # 上のパイプ
-                vox_x, vox_y = self.convert_position_to_voxelamming(
+                upper_pipe_vox_x, upper_pipe_vox_y = self.convert_position_to_voxelamming(
                     pipe.x, pipe.y_top, pipe.width, pipe.height)
-                self.vox.move_sprite(pipe.name_top, vox_x, vox_y, 0, 1)
+                self.vox.move_sprite(pipe.name_top, upper_pipe_vox_x, upper_pipe_vox_y, 0, 1)
                 # 下のパイプ
-                vox_x, vox_y = self.convert_position_to_voxelamming(
+                lower_pipe_vox_x, lower_pipe_vox_y = self.convert_position_to_voxelamming(
                     pipe.x, pipe.y_bottom, pipe.width, pipe.height)
-                self.vox.move_sprite(pipe.name_bottom, vox_x, vox_y, 0, 1)
+                self.vox.move_sprite(pipe.name_bottom, lower_pipe_vox_x, lower_pipe_vox_y, 0, 1)
 
             # ゲームオーバーの表示と画面を赤に変更
             if self.game_over:

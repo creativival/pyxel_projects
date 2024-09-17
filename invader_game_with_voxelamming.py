@@ -255,7 +255,7 @@ class App:
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
-        self.vox.set_game_score(self.score, -66, 57)
+        self.vox.set_game_score(self.score, -64, 54)
         self.vox.set_command('liteRender')
 
         # プレイヤーのスプライトを作成
@@ -273,7 +273,7 @@ class App:
             self.vox.set_box_size(self.dot_size)
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                      blue=0, alpha=0.5)
-            self.vox.set_game_score(self.score, -66, 57)
+            self.vox.set_game_score(self.score, -64, 54)
             self.vox.set_command('liteRender')
 
             # スプライトの移動

@@ -221,8 +221,8 @@ class App:
         self.vox.set_box_size(self.dot_size)
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
-        self.vox.set_game_score(self.score, -24, 26)
-        self.vox.display_text(f"LIVES: {self.lives}", 26, 26)
+        self.vox.set_game_score(self.score, -24, 24)
+        self.vox.display_text(f"LIVES: {self.lives}", 26, 24)
         self.vox.set_command('liteRender')
 
         # パドルのスプライトを表示
@@ -240,8 +240,8 @@ class App:
             self.vox.set_box_size(self.dot_size)
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                      blue=0, alpha=0.5)
-            self.vox.set_game_score(self.score, -24, 26)
-            self.vox.display_text(f"LIVES: {self.lives}", 26, 26)
+            self.vox.set_game_score(self.score, -24, 24)
+            self.vox.display_text(f"LIVES: {self.lives}", 26, 24)
             self.vox.set_command('liteRender')
 
             # パドルのスプライトの移動
@@ -251,9 +251,10 @@ class App:
 
             # bricksの移動はテンプレートを複数箇所に表示する
             for brick in self.bricks:
-                vox_x, vox_y = self.convert_position_to_voxelamming(
-                    brick.x, brick.y, brick.width, brick.height)
-                self.vox.move_sprite(brick.name, vox_x, vox_y, 0, 1)
+                if brick.visible:
+                    vox_x, vox_y = self.convert_position_to_voxelamming(
+                        brick.x, brick.y, brick.width, brick.height)
+                    self.vox.move_sprite(brick.name, vox_x, vox_y, 0, 1)
 
             # ボールのスプライトを移動
             vox_x, vox_y = self.convert_position_to_voxelamming(

@@ -256,7 +256,7 @@ class Game:
 
         # コインブロックとの接触判定
         for coin in self.coins:
-            if (self.player.x + self.player.w > coin.x and
+            if coin.visible and (self.player.x + self.player.w > coin.x and
                     self.player.x < coin.x + coin.w and
                     self.player.y + self.player.h > coin.y and
                     self.player.y < coin.y + coin.h):
@@ -264,7 +264,7 @@ class Game:
 
         # 敵キャラとの衝突判定
         for enemy in self.enemies:
-            if (self.player.x + self.player.w > enemy.x and
+            if enemy.visible and (self.player.x + self.player.w > enemy.x and
                     self.player.x < enemy.x + enemy.w and
                     self.player.y + self.player.h > enemy.y and
                     self.player.y < enemy.y + enemy.h):
@@ -397,14 +397,14 @@ class Game:
             # フラッグのスプライトの移動
             if -20 < self.flag.x - self.camera_x < pyxel.width:
                 # フラッグ
-                vox_x, vox_y = self.convert_position_to_voxelamming(
+                flag_vox_x, flag_vox_y = self.convert_position_to_voxelamming(
                     self.flag.x, self.flag.y, self.flag.w, 8)
-                self.vox.move_sprite(self.flag.name, vox_x, vox_y, 0, 1)
+                self.vox.move_sprite(self.flag.name, flag_vox_x, flag_vox_y, 0, 1)
 
                 # 支柱
-                vox_x, vox_y = self.convert_position_to_voxelamming(
+                pole_vox_x, pole_vox_y = self.convert_position_to_voxelamming(
                     self.flag.x, self.flag.y, 1, self.flag.h)
-                self.vox.display_dot(vox_x, vox_y, 0, 11, 1, self.flag.h)
+                self.vox.display_dot(pole_vox_x, pole_vox_y, 0, 11, 1, self.flag.h)
 
             # ゲームクリアの表示と画面を青に変更
             if self.game_clear:

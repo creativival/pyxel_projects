@@ -17,7 +17,7 @@ class Player:
         '7 -1 8 -1 -1 8 -1 -1 7 -1 8 8 8 8 -1 -1 7 -1 8 8 8 8 -1 -1 7 -1 4 4 4 4 -1 -1 8 8 4 4 4 4 8 8 -1 -1 8 8 8 8 '
         '-1 -1 -1 -1 8 8 8 8 -1 -1 -1 4 4 -1 -1 4 4 -1'
     )
-    
+
     def __init__(self, window_width, window_height):
         self.window_width = window_width
         self.window_height = window_height
@@ -62,7 +62,7 @@ class Slime:
         '-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 10 -1 -1 -1 -1 -1 -1 10 10 10 -1 -1 -1 -1 10 10 10 10 10 -1 -1 10 10 10 '
         '10 10 10 -1 -1 10 9 10 10 9 10 -1 -1 10 10 10 10 10 10 -1 -1 10 7 9 9 7 10 -1'
     )
-    
+
     def __init__(self, player, window_width, window_height):
         self.player = player
         self.window_width = window_width
@@ -97,7 +97,7 @@ class Dragon:
         '3 3 3 3 11 11 3 3 3 11 11 -1 -1 -1 3 3 3 3 3 3 3 3 3 3 3 -1 -1 -1 -1 -1 -1 3 3 3 3 3 3 3 3 3 3 -1 -1 -1 -1 -1 '
         '-1 -1 3 3 3 3 3 3 3 3 3 3 -1 -1 -1 -1 -1 3 3 3 -1 -1 -1 -1 -1 -1 -1 3 3 -1 -1'
     )
-    
+
     def __init__(self, player, window_width, window_height):
         self.player = player
         self.window_width = window_width
@@ -128,7 +128,7 @@ class Tree:
         '-1 -1 11 11 11 11 -1 -1 -1 11 11 3 3 11 11 -1 -1 11 3 3 3 3 11 -1 -1 11 3 3 3 3 11 -1 -1 11 3 4 4 3 11 -1 -1 '
         '11 11 4 4 11 11 -1 -1 -1 11 4 4 11 -1 -1 -1 -1 -1 4 4 -1 -1 -1'
     )
-    
+
     def __init__(self, player, window_width, window_height):
         self.player = player
         self.window_width = window_width
@@ -361,22 +361,49 @@ class Game:
 
             # スライムのスプライトを移動
             for slime in self.slimes:
-                if slime.visible:
+                if slime.visible and \
+                        (-pyxel.width / 2 < slime.x - self.player.x < pyxel.width / 2
+                         and -pyxel.height / 2 < slime.y - self.player.y < pyxel.height / 2):
                     vox_x, vox_y = self.convert_position_to_voxelamming(
                         slime.x, slime.y, slime.w, slime.h)
                     self.vox.move_sprite(slime.name, vox_x, vox_y, 0, 1)
 
             # 木のスプライトを移動
             for tree in self.trees:
-                vox_x, vox_y = self.convert_position_to_voxelamming(
-                    tree.x, tree.y, tree.w, tree.h)
-                self.vox.move_sprite(tree.name, vox_x, vox_y, 0, 1)
+                if (-pyxel.width / 2 < tree.x - self.player.x < pyxel.width / 2
+                        and -pyxel.height / 2 < tree.y - self.player.y < pyxel.height / 2):
+                    vox_x, vox_y = self.convert_position_to_voxelamming(
+                        tree.x, tree.y, tree.w, tree.h)
+                    self.vox.move_sprite(tree.name, vox_x, vox_y, 0, 1)
 
             # ドラゴンの移動
-            if self.dragon.visible:
+            if self.dragon.visible and \
+                    (-pyxel.width / 2 < self.dragon.x - self.player.x < pyxel.width / 2
+                     and -pyxel.height / 2 < self.dragon.y - self.player.y < pyxel.height / 2):
                 vox_x, vox_y = self.convert_position_to_voxelamming(
                     self.dragon.x, self.dragon.y, self.dragon.w, self.dragon.h)
                 self.vox.move_sprite(self.dragon.name, vox_x, vox_y, 0, 1)
+
+            # HPの表示
+            self.vox.display_text(f"Player HP: {self.player.hp}", 50, 50, color_id=9)
+
+            # 戦闘メッセージの表示
+            if self.in_battle:
+                # 敵のHPを表示
+                self.vox.display_text(f"{self.current_enemy_name} HP: {self.current_enemy.hp}", 50, 40, color_id=8)
+
+                # オプションを表示
+                self.vox.display_text("Choose action:", -50, 50, color_id=7)
+                for i, option in enumerate(self.battle_options):
+                    color = 7 if i == self.selected_option else 6
+                    self.vox.display_text(option, -60, 40 - i * 10, color_id=color, align="left")
+
+            # 戦闘ログの表示
+            if pyxel.frame_count - self.log_display_time < 90:
+                y_offset = 0
+                for log in self.battle_log[-3:]:  # 最新の3件を表示
+                    self.vox.display_text(log, -60, y_offset, color_id=7, align="left")
+                    y_offset -= 10
 
             # ゲームクリアの表示と画面を青に変更
             if self.game_clear:
@@ -401,7 +428,7 @@ class Game:
 
     def convert_position_to_voxelamming(self, x, y, width=1, height=1):
         x = x - self.player.x + self.window_width // 2  # プレイヤーを中心に固定
-        y = y - self.player.x + self.window_height // 2  # プレイヤーを中心に固定
+        y = y - self.player.y + self.window_height // 2  # プレイヤーを中心に固定
         return x - self.window_width // 2 + width // 2, self.window_height // 2 - (y + height // 2)
 
 

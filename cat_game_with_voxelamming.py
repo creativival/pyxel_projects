@@ -189,8 +189,8 @@ class App:
     def reset_game(self):
         self.score = 0  # スコアをリセット
         self.last_score_update_time = pyxel.frame_count  # タイマーをリセット
-        self.cat = Cat(self)  # 猫の初期化(位置、サイズ)
-        self.mouse = Mouse(self)  # マウスの初期化(位置)
+        self.cat = Cat(self.window_width, self.window_height)  # 猫の初期化(位置、サイズ)
+        self.mouse = Mouse(self.window_width, self.window_height)  # マウスの初期化(位置)
         self.game_started = True
         self.game_over = False
 
@@ -199,7 +199,7 @@ class App:
         self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1, blue=0,
                                  alpha=0.8)
         # スコアはサイズ24x2として、中心基準で表示する位置を計算する
-        self.vox.set_game_score(self.score, -28, 29)
+        self.vox.set_game_score(self.score, -28, 26)
         self.vox.set_command('liteRender')
 
         # 猫とマウスのスプライトを作成
@@ -215,7 +215,7 @@ class App:
             self.vox.set_box_size(self.dot_size)
             self.vox.set_game_screen(self.window_width, self.window_height, self.window_angle, red=1, green=1,
                                      blue=0, alpha=0.5)
-            self.vox.set_game_score(self.score, -28, 29)
+            self.vox.set_game_score(self.score, -28, 26)
             self.vox.set_command('liteRender')
 
             cat_x, cat_y = self.convert_position_to_voxelamming(self.cat.x, self.cat.y, self.cat.w, self.cat.h)
