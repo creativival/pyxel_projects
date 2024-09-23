@@ -81,10 +81,13 @@ class App:
         pyxel.init(self.window_width, self.window_height, title="Pyxel Invader Game", fps=30)
         pyxel.mouse(True)
         pyxel.load("invader_game.pyxres")
+        pyxel.play(0, 0, loop=True)
         pyxel.run(self.update, self.draw)
+
 
     def update(self):
         if self.game_over or self.game_clear:
+            pyxel.stop(0)
             # カーソル表示
             pyxel.mouse(True)
 
@@ -99,6 +102,7 @@ class App:
         self.player.update()
 
         if pyxel.btnp(pyxel.KEY_SPACE):
+            pyxel.play(1, 1)
             missile_x = self.player.x + self.player_missile_speed
             missile_y = self.player.y
             missile_clor_id = 10  # 青色
@@ -163,6 +167,7 @@ class App:
             for enemy in self.enemies[:]:
                 if (enemy.x < missile.x < enemy.x + 16 and
                         enemy.y < missile.y < enemy.y + 12):
+                    pyxel.play(2, 2)
                     self.missiles.remove(missile)
                     self.enemies.remove(enemy)
                     self.score += 10
@@ -172,16 +177,19 @@ class App:
         for missile in self.enemy_missiles[:]:
             if (self.player.x < missile.x < self.player.x + 8 and
                     self.player.y < missile.y < self.player.y + 8):
+                pyxel.play(0, 3)
                 self.game_over = True
 
         # プレイヤーと敵の衝突判定
         for enemy in self.enemies:
             if (self.player.x < enemy.x < self.player.x + 8 and
                     self.player.y < enemy.y < self.player.y + 8):
+                pyxel.play(0, 3)
                 self.game_over = True
 
         # ゲームクリア判定
         if not self.enemies:
+            pyxel.play(0, 4)
             self.game_clear = True
 
     def draw(self):
