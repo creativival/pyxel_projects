@@ -73,9 +73,9 @@ class App:
         self.window_width = 80
         self.window_height = 60
         self.pipes = []
-        self.pipe_gap = 20  # パイプ間の隙間の高さ
+        self.pipe_gap = 30  # パイプ間の隙間の高さ
         self.pipe_interval = 30  # パイプの出現間隔
-        self.pipe_position_variation = 10  # パイプ位置のばらつき範囲をインスタンス変数に設定
+        self.pipe_position_variation = 5  # パイプ位置のばらつき範囲をインスタンス変数に設定
         self.pipe_timer = 0
         self.score = 0
         self.game_over = False

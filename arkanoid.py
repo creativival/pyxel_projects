@@ -21,6 +21,9 @@ class Paddle:
 
 
 class Brick:
+    width = 8
+    height = 4
+
     def __init__(self, x, y):
         self.x = x
         self.y = y

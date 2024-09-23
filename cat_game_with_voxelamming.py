@@ -23,7 +23,7 @@ class Cat:
         self.w = 8
         self.h = 8
         self.speed = 0.1  # 猫の移動速度
-        self.diameter = 4  # 初期の猫のサイズ（円の直径）
+        self.scale = 0.5  # 初期の猫のサイズ（デフォルトの0.5倍）
 
     def chase(self, mouse):
         # 猫がマウスを追いかける
@@ -44,7 +44,7 @@ class Cat:
             self.y -= self.speed
 
         # 猫のサイズを徐々に大きくする
-        self.diameter += 0.05
+        self.scale += 0.005
 
 
 class Mouse:
@@ -68,7 +68,7 @@ class Mouse:
         self.w = 8
         self.h = 8
         self.speed = 0.5  # マウスの移動速度
-        self.diameter = 8  # マウスのサイズ（円の直径）
+        self.scale = 1  # マウスのサイズ（デフォルトサイズ）
 
     def move(self):
         # 矢印キーでマウスを動かす
@@ -123,7 +123,6 @@ class App:
         # ボクセラミングの設定（Pyxelの初期化の前に実行）
         self.dot_size = 1  # AR空間で表示されるスプライトのドットのサイズ（センチメートル）
         self.window_angle = 80  # ARウインドウの傾き（度）
-        self.sprite_base_diameter = 8  # スプライトの基本直径（スプライトの送信スケールの基準値）
         self.vox = Voxelamming('1000')
         self.init_voxelamming()
 
@@ -149,8 +148,10 @@ class App:
         self.cat.chase(self.mouse)  # 猫がマウスを追いかける
 
         # 衝突判定: 猫の円がマウスに触れるとゲームオーバー
+        cat_radius = self.cat.scale * 4
+        mouse_radius = self.mouse.scale * 4
         if ((self.cat.x - self.mouse.x) ** 2 + (self.cat.y - self.mouse.y) ** 2) < (
-                self.cat.diameter / 2 + self.mouse.diameter / 2) ** 2:
+                cat_radius + mouse_radius) ** 2:
             self.game_over = True
 
         # スコアを1秒ごとに加算
@@ -179,10 +180,9 @@ class App:
                        pyxel.frame_count % 16)
             return
 
-        # 徐々に大きくなる円を描画する（スプライトのサイズを表現）
-        pyxel.circ(self.cat.x + 4, self.cat.y + 4, self.cat.diameter / 2, pyxel.COLOR_RED)
         # 猫のスプライトを描画する
-        pyxel.blt(self.cat.x, self.cat.y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1)
+        pyxel.blt(self.cat.x, self.cat.y, self.cat.img, self.cat.u, self.cat.v, self.cat.w, self.cat.h, 1, 0,
+                  self.cat.scale)
         # マウスのスプライトを描画する
         pyxel.blt(self.mouse.x, self.mouse.y, self.mouse.img, self.mouse.u, self.mouse.v, self.mouse.w, self.mouse.h, 1)
 
@@ -219,11 +219,11 @@ class App:
             self.vox.set_command('liteRender')
 
             cat_x, cat_y = self.convert_position_to_voxelamming(self.cat.x, self.cat.y, self.cat.w, self.cat.h)
-            cat_scale = self.cat.diameter / self.sprite_base_diameter
+            cat_scale = self.cat.scale
             self.vox.move_sprite(self.cat.name, cat_x, cat_y, self.cat.direction, cat_scale)
 
             mouse_x, mouse_y = self.convert_position_to_voxelamming(self.mouse.x, self.mouse.y, self.cat.w, self.cat.h)
-            mouse_scale = self.mouse.diameter / self.sprite_base_diameter
+            mouse_scale = self.mouse.scale
             self.vox.move_sprite(self.mouse.name, mouse_x, mouse_y, self.mouse.direction, mouse_scale)
 
             self.vox.send_data()

@@ -73,6 +73,14 @@ class Enemy:
         if self.visible:
             pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h, 0)
 
+    @classmethod
+    def create_enemies(cls, positions):
+        # ブロックを作成
+        enemies = []
+        for position in positions:
+            enemies.append(cls(*position))
+        return enemies
+
 
 class Brick:
     def __init__(self, x, y, w, h):
@@ -86,6 +94,14 @@ class Brick:
 
     def draw(self, camera_x):
         pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h, 0)
+
+    @classmethod
+    def create_bricks(cls, positions):
+        # ブロックを作成
+        bricks = []
+        for position in positions:
+            bricks.append(cls(*position))
+        return bricks
 
 
 class Coin:
@@ -102,6 +118,14 @@ class Coin:
     def draw(self, camera_x):
         if self.visible:
             pyxel.blt(self.x - camera_x, self.y, self.img, self.u, self.v, self.w, self.h, 0)
+
+    @classmethod
+    def create_coins(cls, positions):
+        # コインを作成
+        coins = []
+        for position in positions:
+            coins.append(cls(*position))
+        return coins
 
 
 class Flag:
@@ -122,17 +146,23 @@ class Game:
     def __init__(self):
         self.window_width = 160
         self.window_height = 120
-        self.player = Player()
-        self.enemies = [Enemy(40, 92, 90), Enemy(130, 92, 90)]
-        self.blocks = [Brick(0, 100, 32, 8), Brick(60, 100, 32, 8), Brick(120, 100, 32, 8), Brick(180, 100, 32, 8),
-                       Brick(240, 100, 32, 8), Brick(300, 100, 32, 8)]
-        self.stairs = [Brick(332, 92, 16, 8), Brick(340, 84, 16, 8), Brick(348, 76, 16, 8), Brick(356, 68, 16, 8),
-                       Brick(364, 60, 16, 8)]
-        self.coins = [Coin(60, 80), Coin(120, 70), Coin(180, 60)]
         self.game_over = False
         self.game_clear = False  # ゲームクリアフラグ
         self.flag = Flag(464, 30, 8, 90)  # ゴールの旗を右端に配置
         self.camera_x = 0  # カメラの位置（スクロール）
+
+        # インスタンスを作成
+        self.player = Player()
+        enemy_positions = [(40, 92, 90), (130, 92, 90)]
+        self.enemies = Enemy.create_enemies(enemy_positions)
+        block_positions = [(0, 100, 32, 8), (32, 100, 32, 8), (80, 100, 32, 8), (112, 100, 32, 8), (150, 100, 32, 8),
+                           (182, 100, 32, 8), (240, 100, 32, 8), (300, 100, 32, 8)]
+        self.blocks = Brick.create_bricks(block_positions)
+        stair_positions = [(332, 92, 16, 8), (340, 84, 16, 8), (348, 76, 16, 8), (356, 68, 16, 8),
+                           (364, 60, 16, 8)]
+        self.stairs = Brick.create_bricks(stair_positions)
+        coin_positions = [(60, 80), (120, 70), (180, 60)]
+        self.coins = Coin.create_coins(coin_positions)
 
         pyxel.init(self.window_width, self.window_height, title="Super Mario", fps=30)
         pyxel.load('super_mario.pyxres')
@@ -152,7 +182,7 @@ class Game:
 
         # コインブロックとの接触判定
         for coin in self.coins:
-            if (self.player.x + self.player.w > coin.x and
+            if coin.visible and (self.player.x + self.player.w > coin.x and
                     self.player.x < coin.x + coin.w and
                     self.player.y + self.player.h > coin.y and
                     self.player.y < coin.y + coin.h):
@@ -160,7 +190,7 @@ class Game:
 
         # 敵キャラとの衝突判定
         for enemy in self.enemies:
-            if (self.player.x + self.player.w > enemy.x and
+            if enemy.visible and (self.player.x + self.player.w > enemy.x and
                     self.player.x < enemy.x + enemy.w and
                     self.player.y + self.player.h > enemy.y and
                     self.player.y < enemy.y + enemy.h):

@@ -1,6 +1,6 @@
 import pyxel
-import time
 import random
+import time
 # from voxelamming import Voxelamming
 from voxelamming_local import Voxelamming  # ローカルで開発している場合はこちらを使う
 
@@ -86,7 +86,7 @@ class App:
         # 敵の設定
         self.enemy_rows = 3
         self.enemy_cols = 6
-        self.enemy_speed = 1
+        self.enemy_default_speed = 1
         self.enemy_direction = 1
         self.enemies = Enemy.create_enemies(self.enemy_rows, self.enemy_cols)
         self.enemy_missiles = []
@@ -138,18 +138,14 @@ class App:
         # 敵の移動速度
         enemy_num = len(self.enemies)
         if enemy_num < 10:
-            self.enemy_speed *= 1.5
+            enemy_speed = 1.5 * self.enemy_default_speed
+        else:
+            enemy_speed = self.enemy_default_speed
 
         # 敵の移動
         move_down = False
         for enemy in self.enemies:
-            enemy.x += self.enemy_speed * self.enemy_direction
-
-        for enemy in self.enemies:
-            if enemy.x > pyxel.width - 8 or enemy.x < 0:
-                self.enemy_direction *= -1
-                move_down = True
-                break  # 端に到達したらすぐに方向を変える
+            enemy.x += enemy_speed * self.enemy_direction
 
         if move_down:
             for enemy in self.enemies:
