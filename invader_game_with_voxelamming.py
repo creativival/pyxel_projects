@@ -25,9 +25,11 @@ class Player:
 
     def update(self):
         if pyxel.btn(pyxel.KEY_LEFT):
-            self.x -= self.speed
+            x = self.x - self.speed
+            self.x = max(0, x)
         if pyxel.btn(pyxel.KEY_RIGHT):
-            self.x += self.speed
+            x = self.x + self.speed
+            self.x = min(pyxel.width - 8, x)
 
 
 class Enemy:
@@ -77,6 +79,7 @@ class App:
         self.score = 0
         self.game_over = False
         self.game_clear = False
+        self.missile_shot_time = 0
 
         # プレイヤーの設定
         self.player = Player(self.window_width // 2, self.window_height - 10, 2)
@@ -102,6 +105,8 @@ class App:
         pyxel.init(self.window_width, self.window_height, title="Pyxel Invader Game", fps=30)
         pyxel.mouse(True)
         pyxel.load("invader_game.pyxres")
+        # BGMの再生
+        pyxel.play(0, 0, loop=True)
         pyxel.run(self.update, self.draw)
 
     def update(self):
@@ -120,14 +125,17 @@ class App:
         self.player.update()
 
         if pyxel.btnp(pyxel.KEY_SPACE):
-            missile_x = self.player.x + self.player_missile_speed
-            missile_y = self.player.y
-            missile_clor_id = 10  # 青色
-            missile_direction = 0
-            missile_width = 2
-            missile_height = 4
-            self.missiles.append(
-                Missile(missile_x, missile_y, missile_clor_id, missile_direction, missile_width, missile_height))
+            if pyxel.frame_count - self.missile_shot_time > 15:
+                self.missile_shot_time = pyxel.frame_count
+                pyxel.play(1, 1)
+                missile_x = self.player.x + self.player_missile_speed
+                missile_y = self.player.y
+                missile_clor_id = 10  # 青色
+                missile_direction = 0
+                missile_width = 2
+                missile_height = 4
+                self.missiles.append(
+                    Missile(missile_x, missile_y, missile_clor_id, missile_direction, missile_width, missile_height))
 
         # ミサイルの移動
         for missile in self.missiles[:]:
@@ -146,6 +154,12 @@ class App:
         move_down = False
         for enemy in self.enemies:
             enemy.x += enemy_speed * self.enemy_direction
+
+        for enemy in self.enemies:
+            if enemy.x > pyxel.width - 8 or enemy.x < 0:
+                self.enemy_direction *= -1
+                move_down = True
+                break  # 端に到達したらすぐに方向を変える
 
         if move_down:
             for enemy in self.enemies:
@@ -178,6 +192,7 @@ class App:
             for enemy in self.enemies[:]:
                 if (enemy.x < missile.x < enemy.x + 16 and
                         enemy.y < missile.y < enemy.y + 12):
+                    pyxel.play(2, 2)
                     self.missiles.remove(missile)
                     self.enemies.remove(enemy)
                     self.score += 10
@@ -187,16 +202,22 @@ class App:
         for missile in self.enemy_missiles[:]:
             if (self.player.x < missile.x < self.player.x + 8 and
                     self.player.y < missile.y < self.player.y + 8):
+                pyxel.stop(0)
+                pyxel.play(0, 4)
                 self.game_over = True
 
         # プレイヤーと敵の衝突判定
         for enemy in self.enemies:
             if (self.player.x < enemy.x < self.player.x + 8 and
                     self.player.y < enemy.y < self.player.y + 8):
+                pyxel.stop(0)
+                pyxel.play(0, 4)
                 self.game_over = True
 
         # ゲームクリア判定
         if not self.enemies:
+            pyxel.stop(0)
+            pyxel.play(0, 3)
             self.game_clear = True
 
         # ボクセラミングの更新
@@ -245,6 +266,9 @@ class App:
         self.enemy_speed = 1
         self.enemies = Enemy.create_enemies(self.enemy_rows, self.enemy_cols)
         self.enemy_missiles = []
+
+        # BGMの再生
+        pyxel.play(0, 0, loop=True)
 
     def init_voxelamming(self):
         # ボクセラミングの初期化

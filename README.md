@@ -2,6 +2,8 @@
 
 Pixelのゲームを作成します。
 
+iOS / visionOS用のアプリ`Voxelamming`と連携して、Pixelのゲームをホストします。
+
 ## 環境
 
 - Mac OS X 10.15.7
@@ -14,7 +16,10 @@ Pixelのゲームを作成します。
 ```bash
 $ conda create -n pixel_projects python=3.10
 $ conda activate pixel_projects
-$ pip install pygame
+$ pip install pyxel
+# Development
+$ pip install websocket-client
+$ pip install voxelamming
 ```
 
 ## サンプルプロジェクト

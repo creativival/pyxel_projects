@@ -88,7 +88,6 @@ class App:
         pyxel.play(0, 0, loop=True)
         pyxel.run(self.update, self.draw)
 
-
     def update(self):
         if self.game_over or self.game_clear:
             # カーソル表示
